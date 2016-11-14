@@ -1,0 +1,26 @@
+ --- Insitu ECHO meas template for data-frame used to store inputs and write file header - change at your own risk---,,,,
+key,value,units,fmf_name,fmf_category
+exp_name,experiment,,,*reference
+sample,Sample,,,*reference
+user,user,,,*reference
+date,date,,,*reference
+setup,inSituEcho,,setup,*setup
+vers,version,,setup,*setup
+loc,"AFMD lab, ECHO",,setup,*setup
+x_descript,V,/V,Voltage,*data definitions
+y_descript,I,/A,Current,*data definitions
+sav_loc,NA,NA,,
+rec_len,NA,NA,,
+firstV,V,Vstart,Parameters,*parameters
+lastV,V,Vend,Parameters,*parameters
+stepSize,V,Vstep,Parameters,*parameters
+holdTime,s,holdTime,Parameters,*parameters
+baudR,baudRate,baudRate,setup,*setup
+termChar,termChar,termChar,setup,*setup
+connectionType,Connection,Connection,setup,*setup
+4wire,Four wire,,setup,*setup
+serAdapt,NA,NA,setup,*setup
+serAd,NA,NA,setup,*setup
+fixedV,V,V,Vsource,*parameters
+nRepeats,n,NA,Parameters,*parameters
+pauseTime,s,s,Time between measurements,*parameters
