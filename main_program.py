@@ -7,6 +7,7 @@ __version__ = '0'
 Main program for Transistor measurement control. This creates and controls the threads and GUI.
 '''
 
+import os
 import sys
 import datetime
 import getpass
@@ -66,10 +67,21 @@ class programSetup(QObject):
         self.gui.mainWindow.button_cancel1.clicked.connect(self.forceWorkerReset1)
         self.gui.mainWindow.button_cancel2.clicked.connect(self.forceWorkerReset2)
         self.gui.mainWindow.pushButtonSave.clicked.connect(self.gui.selectFile)
+        
+        self.gui.mainWindow.pushButton_save.clicked.connect(self.gui.getInputs) # Save settings        
+        self.gui.mainWindow.pushButton_load.clicked.connect(self.gui.restoreState) # Restore settings
+        
         self.signalStatus.connect(self.gui.updateStatus)
         self.worker1.signalStatus.connect(self.gui.updateStatus)
         self.worker2.signalStatus.connect(self.gui.updateStatus)
         self.parent().aboutToQuit.connect(self.forceQuit)
+        
+        self.worker1.endData.connect(self.gui.saveData)
+        self.worker1.newfixedVDataPoint.connect(self.gui.plotPoint)
+        self.worker1.newIVData.connect(self.gui.plotIV)   
+        
+        
+
         self.worker2.endData.connect(self.gui.saveData)
         self.worker2.newDataPoint.connect(self.gui.plotPoint)
         
@@ -100,11 +112,12 @@ class programSetup(QObject):
             
             
 class keithleyWorker(QObject):
-    '''Conductivity data aquisition worker'''
+    '''IV data aquisition worker'''
     
     signalStatus = pyqtSignal(str)
     endData = pyqtSignal(object)
-    newDataPoint = pyqtSignal(object)
+    newfixedVDataPoint = pyqtSignal(object)
+    newIVData = pyqtSignal(object)
     askParameters = pyqtSignal(object)    
     
     def __init__(self, parent=None):
@@ -112,15 +125,18 @@ class keithleyWorker(QObject):
         
     @pyqtSlot()        
     def startWork(self):
+        
         self._flag = False
-        
-        self.user_parameters = pd.DataFrame.from_csv('df_measurement.csv')
-        
-        #self.user_parameters = {'baudR':57600, 'termChar':u'\r', 'serAdapt':'USB','serAd':0, 'connectionType':'Serial', 'debug':1}
+        self.user_parameters = pd.DataFrame.from_csv('df_measurement.csv', header=1) # Get input parameters from df_measurement
         smu, rm = IV_Engine.connect2Keith(self)
         
-        pars = {'fixedV':0, 'nRepeats':20, 'pauseTime':1} #Set measurement parameters
-        v,i = IV_Engine.measure_fixedV(self, pars, smu)
+        if self.user_parameters.value['takeIVsweep'] == 'True':
+            v, i = IV_Engine.measure_IVsweep(self, smu)
+        
+        if self.user_parameters.value['takefixedV'] == 'True':
+            v, i = IV_Engine.measure_fixedV(self, smu)
+        
+        self.signalStatus.emit('Completed IV measurements')
     
     @pyqtSlot()
     def stopWork(self):
@@ -166,7 +182,8 @@ class mainWindow(QMainWindow):
         ### Widget and fmf definitions ###
         self.inputManager = pd.DataFrame.from_csv('df_template.csv', header=1) # object for metadata
         fields = list(self.inputManager.index) # create a list of the indices in the metadata file
-        self.inputWidgets = [w for w in self.findChildren(QWidget) if str(w.accessibleName()) in fields] # creates list of all QWidgets in GUI
+        self.inputWidgets = [w for w in self.findChildren(QWidget) if str(w.accessibleName()) in fields] # creates list of all QWidgets in GUI        
+        
         
     @pyqtSlot(str)
     def updateStatus(self, status):
@@ -196,7 +213,27 @@ class mainWindow(QMainWindow):
         self.inputManager.loc['user'].value = str(getpass.getuser())
         self.inputManager.loc['vers'].value = __version__
         
-        self.inputManager.to_csv('df_measurement.csv')
+        mainWindow.saveState(self)
+        
+        
+    @pyqtSlot()
+    def saveState(self):
+        ''' Save current inputs to csv '''
+        hdr =  ' --- Insitu ECHO meas template for data-frame used to store inputs and write file header - change at your own risk---,,,,'
+        with open('df_measurement.csv','w') as f:
+            f.write(hdr + '\n')
+        self.inputManager.to_csv('df_measurement.csv', mode = 'a', na_rep = ' ') #append (hdr)
+
+    @pyqtSlot()
+    def restoreState(self):
+        ''' write inputManager values to user input widgets.
+                input widget values saved on close to inputManager csv'''
+        self.inputManager = pd.DataFrame.from_csv('df_measurement.csv', header = 1)
+        fields = list(self.inputManager.index)
+        for w in self.inputWidgets:
+            field = w.accessibleName()
+            Utilities.setWidgetValue(w, self.inputManager.loc[field].value)        
+        
         
         
     @pyqtSlot(object)
@@ -204,7 +241,7 @@ class mainWindow(QMainWindow):
         '''Save final data array'''
         if self.mainWindow.checkBoxSave.isChecked():
             data2save = np.column_stack((dat[0],dat[1]))
-            format = ['%.6e']*data2save.shape[1] # number of columns
+            format = ['%.5g']*data2save.shape[1] # number of columns
             
             try:
                 directory = self.mainWindow.lineEditSave.text()
@@ -233,17 +270,32 @@ class mainWindow(QMainWindow):
     @pyqtSlot(object)    
     def plotPoint(self, datPoint):
         '''Update GUI graph with new measurement point'''
-        self.figData.plot(datPoint[0],datPoint[1])
+        self.fixedVfig.plot(datPoint[0],datPoint[2])
+        self.fixedVfig.figure.suptitle('Fixed Voltage Measurements')
+        self.fixedVfig.axes.set_xlabel('Sample')
+        self.fixedVfig.axes.set_ylabel('I (A)')
+        self.mainWindow.pltWidget.figure.tight_layout()
         self.mainWindow.pltWidget.draw()
+        
+        
+    @pyqtSlot(object)    
+    def plotIV(self, datPoint):
+        '''Update GUI graph with new measurement point'''
+        self.IVfig.plot(datPoint[0],datPoint[1])
+        self.IVfig.figure.suptitle('IV plot')
+        self.IVfig.axes.set_xlabel('Voltage [V]')
+        self.IVfig.axes.set_ylabel('I (A)')
+        self.mainWindow.pltWidget.figure.tight_layout()
+        self.mainWindow.pltWidget.draw()        
 
 
     def setUpPlot(self):
         '''Create matplotlib in main window'''
         embeddedGraph = self.mainWindow.pltWidget
-        embeddedGraph.axes.set_xlabel('V (V)')
-        embeddedGraph.axes.set_ylabel('I (Amps)')
         
-        self.figData = embeddedGraph.figure.add_subplot(111)
+        self.fixedVfig = embeddedGraph.figure.add_subplot(111)
+        self.IVfig = self.mainWindow.pltWidget.figure.add_subplot(111)
+        
         embeddedGraph.figure.tight_layout()
         self.mainWindow.toolbar = NavigationToolbar(embeddedGraph,self)
         self.mainWindow.plotLayout.addWidget(self.mainWindow.toolbar)

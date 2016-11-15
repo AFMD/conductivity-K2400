@@ -121,9 +121,9 @@ def setWidgetValue(w, v):
 	if type(w) == QLineEdit:
 		w.setText('%s'%v)
 	elif type(w) == QSpinBox or type(w) == QDoubleSpinBox:
-		w.valueFromText('%s'%v)
+		w.setValue(float(v))
 	elif type(w) == QComboBox:
-		pass #kind of annoying as these work in index, need to loop until find right indx
+		pass #kind of annoying as these work in index, need to loop until find right indx	
 	elif type(w) == QRadioButton or type(w) == QCheckBox:
 		return w.setChecked(bool(v))
 

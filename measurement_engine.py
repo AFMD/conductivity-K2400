@@ -19,24 +19,32 @@ class IV_Engine():
         
     def connect2Keith(self):
         smu, rm = k2400.connect_SMU(self.user_parameters)
-        print (smu.query('*IDN?'))
+        #print (smu.query('*IDN?'))
         return smu, rm
     
-    def measure_fixedV(self, pars, smu):
+    def measure_fixedV(self, smu):
         
         print ('Commencing fixed voltage measurements...')
         self.signalStatus.emit('Running fixed voltage measurement...')
-        
+        print ('Sample', '\t', 'Voltage [V]', '\t', 'Current [A]')
         v = []
         i = []
-        for n in range ((int(pars['nRepeats']))):
+        t = []
+        for n in range ((int(self.user_parameters.value['nRepeats']))):
             if self._flag: 
                 self.signalStatus.emit('Stopped.')
+                print ('Measurement aborted')
                 return v, i
-            vv, ii = smu.measV(pars)
+            vv, ii = smu.measV(self.user_parameters.value)
+            print (n, '\t', vv, '\t', '%.4g' %ii)
             v.append(float(vv))
             i.append(float(ii))
-            time.sleep(float(pars['pauseTime'])) #Time between measurements
+            t.append(int(n))
+            data = t, v, i
+            self.newfixedVDataPoint.emit(data) # for live update
+            time.sleep(float(self.user_parameters.value['pauseTime'])) #Time between measurements
+        data = v, i
+        self.endData.emit(data)
         return v, i
     
     def measure_fixedV_test(self):
@@ -59,24 +67,29 @@ class IV_Engine():
             data = v, i
             self.newDataPoint.emit(data) # for live update
             time.sleep(float(self.user_parameters.value['pauseTime']))
-        self.signalStatus.emit('Complete.')
         data = v, i
         self.endData.emit(data)
         return data
     
-    def measure_IVsweep(self, pars):
+    def measure_IVsweep(self, smu):
         
         print ('Commencing IV Sweep...')
+        
         v = []
         i = []
-        for n in range ((int(pars['nRepeats']))):
-            if self._flag: 
-                self.signalStatus.emit('Stopped.')
-                return v, i
-            vv, ii = smu.measIVsweep(pars)
-            v.append(float(vv))
-            i.append(float(ii))
-            time.sleep(float(pars['pauseTime'])) #Time between measurements
+        if self._flag: 
+            self.signalStatus.emit('Stopped.')
+            print ('Measurement aborted')
+            return v, i
+        v, i = smu.measIVsweep(self.user_parameters.value)
+        data = v, i
+        
+        print ('Voltage [V]', '\t', 'Current [A]')
+        for n in range(len(v)):
+            print (data[0][n], '\t', '%.4f' %data[1][n])
+        
+        self.newIVData.emit(data) # for graph update
+        self.endData.emit(data)
         return v, i        
 
         

@@ -8,6 +8,7 @@ https://github.com/AFMD/transients
 
 import visa
 import sys
+import numpy as np
 
 defaultstdout = sys.stdout #save default console print location
 
@@ -69,7 +70,7 @@ class k2400():
 		self.write(':SENS:CURR:RANG:AUTO ON') #Autorange for current measuremnet
 		self.write(':FORM:ELEM VOLT,CURR') #voltage and current reading
 		self.write(':OUTP ON')
-		print(self.query(':READ?'))
+		#print(self.query(':READ?'))
 		v, i =[float(x) for x in self.query('READ?').split(',')] #break data str into values
 		self.write('OUTP OFF')
 		return v, i
@@ -95,8 +96,7 @@ class k2400():
 		self.write("SOUR:VOLT:STOP %s"%pars['finalV']) # in V
 		self.write("SOUR:VOLT:STEP %s"%pars['stepSize']) # in V       
 		self.write("SOUR:DEL %s"%pars['holdTime']) # delay in s
-		time.sleep(2)
-		print('npoints',self.query("SOUR:SWE:POIN?"))
+
 		self.write("TRIG:COUN %s"%self.query("SOUR:SWE:POIN?")) # set trigger to number of points in sweep
 		self.write("SOUR:VOLT:MODE SWE")    #select voltage sweep mode
 		self.write("SOUR:SWE:RANG AUTO")    #Auto source ranging
@@ -112,6 +112,6 @@ class k2400():
 		data = np.fromstring(self.query("READ?"), sep =',') #convert str to np.array
 		i_data = data[1::2]
 		v_data = data[::2]
-		#
-		#        self.write("SOUR:VOLT 0")
+		self.write('OUTP OFF')
+		
 		return v_data,i_data 	
