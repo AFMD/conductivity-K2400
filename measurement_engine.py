@@ -17,50 +17,69 @@ class IV_Engine():
         self._flag1 = False
         sys.stdout = EmittingStream(textWritten=self.write) #redirect console print to UI
         
-    def connect2Keith(self, connSet):
-        smu, rm = k2400.connect_SMU(connSet)
+    def connect2Keith(self):
+        smu, rm = k2400.connect_SMU(self.user_parameters)
         print (smu.query('*IDN?'))
         return smu, rm
     
     def measure_fixedV(self, pars, smu):
         
-        print ('Commencing data aquisition...')
+        print ('Commencing fixed voltage measurements...')
+        self.signalStatus.emit('Running fixed voltage measurement...')
+        
         v = []
         i = []
         for n in range ((int(pars['nRepeats']))):
             if self._flag: 
                 self.signalStatus.emit('Stopped.')
                 return v, i
-            vv, ii = smu.measI(pars)
+            vv, ii = smu.measV(pars)
             v.append(float(vv))
             i.append(float(ii))
-            time.sleep(pars['pauseTime']) #Time between measurements
+            time.sleep(float(pars['pauseTime'])) #Time between measurements
         return v, i
     
-    def measure_fixedV_test(self, pars):
+    def measure_fixedV_test(self):
+        
         print ('Commencing data aquisition...')
         v = []
         i = []
-        for n in range (int(pars['nRepeats'])):
+        for n in range (int(self.user_parameters.value['nRepeats'])):
             if self._flag: 
                 self.signalStatus.emit('Stopped.')
                 print ('Measurement aborted')
                 self.endData.emit(data)
                 return
             
-            ii = random.gauss((float(pars['fixedV'])), 5)
+            ii = random.gauss((float(self.user_parameters.value['fixedV'])), 5)
             vv = n
             print (vv, '\t', '%.4f' %ii)
             v.append(float(vv))
             i.append(float(ii))
             data = v, i
             self.newDataPoint.emit(data) # for live update
-            time.sleep(float(pars['pauseTime']))
+            time.sleep(float(self.user_parameters.value['pauseTime']))
         self.signalStatus.emit('Complete.')
         data = v, i
         self.endData.emit(data)
         return data
     
+    def measure_IVsweep(self, pars):
+        
+        print ('Commencing IV Sweep...')
+        v = []
+        i = []
+        for n in range ((int(pars['nRepeats']))):
+            if self._flag: 
+                self.signalStatus.emit('Stopped.')
+                return v, i
+            vv, ii = smu.measIVsweep(pars)
+            v.append(float(vv))
+            i.append(float(ii))
+            time.sleep(float(pars['pauseTime'])) #Time between measurements
+        return v, i        
+
+        
 class livePlot:
     '''Class for plotting the conductivity data live'''
     

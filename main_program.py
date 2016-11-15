@@ -57,7 +57,8 @@ class programSetup(QObject):
         self.gui.show()
         
     def _connectSignals(self): 
-        self.gui.mainWindow.button_1.clicked.connect(self.worker1.startWork)
+        self.gui.mainWindow.button_1.clicked.connect(self.gui.getInputs) # get inputs before running work
+        self.gui.mainWindow.button_1.clicked.connect(self.worker1.startWork) # run worker
         
         self.gui.mainWindow.button_2.clicked.connect(self.gui.getInputs) # get inputs before running work
         self.gui.mainWindow.button_2.clicked.connect(self.worker2.startWork) # run work
@@ -102,6 +103,9 @@ class keithleyWorker(QObject):
     '''Conductivity data aquisition worker'''
     
     signalStatus = pyqtSignal(str)
+    endData = pyqtSignal(object)
+    newDataPoint = pyqtSignal(object)
+    askParameters = pyqtSignal(object)    
     
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
@@ -109,11 +113,11 @@ class keithleyWorker(QObject):
     @pyqtSlot()        
     def startWork(self):
         self._flag = False
-       
-        self.signalStatus.emit('Running measurement...')
         
-        connSet = {'baudR':57600, 'termChar':u'\r', 'serAdapt':'USB','serAd':0, 'connectionType':'Serial', 'debug':1}
-        smu, rm = IV_Engine.connect2Keith(self, connSet)
+        self.user_parameters = pd.DataFrame.from_csv('df_measurement.csv')
+        
+        #self.user_parameters = {'baudR':57600, 'termChar':u'\r', 'serAdapt':'USB','serAd':0, 'connectionType':'Serial', 'debug':1}
+        smu, rm = IV_Engine.connect2Keith(self)
         
         pars = {'fixedV':0, 'nRepeats':20, 'pauseTime':1} #Set measurement parameters
         v,i = IV_Engine.measure_fixedV(self, pars, smu)
@@ -138,9 +142,8 @@ class WorkerObject2(QObject):
     def startWork(self):
         self._flag = False
         self.signalStatus.emit('Running worker2...')
-        
-        self.conductivityParams = pd.DataFrame.from_csv('df_measurement.csv')
-        IV_Engine.measure_fixedV_test(self, self.conductivityParams.value)
+        self.user_parameters = pd.DataFrame.from_csv('df_measurement.csv')
+        IV_Engine.measure_fixedV_test(self)
         
         
     @pyqtSlot()

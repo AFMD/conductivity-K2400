@@ -15,19 +15,15 @@ class k2400():
 	'''Class to control keithley SMU'''
 	def __init__(self, rm, connectionPars):
 		'''Connect to the Keithley?'''
-		#self.inst = Utilities.inst_connect(rm, connectionPars)
 		self.inst = k2400.inst_connect(rm, connectionPars)
 		
 		
 	def inst_connect(rm, connectionPars):
-		'''function to return a pyvisa Resource given some pars
-		currently only works for serial'''
-	#     print(connectionPars['connectionType'], type(connectionPars['connectionType']))
-		if str(connectionPars['connectionType']) == 'Serial':
-			baudR = int(connectionPars['baudR'])
-			termChar = connectionPars['termChar']
-			address = 'ASRL/dev/tty%s%s::INSTR'%(connectionPars['serAdapt'], connectionPars['serAd'])
-			#print(address)
+		'''function to return a pyvisa Resource given some pars currently only works for serial'''
+		if str(connectionPars.value['connectionType']) == 'Serial':
+			baudR = int(connectionPars.value['baudR'])
+			termChar = connectionPars.value['termChar']
+			address = 'ASRL/dev/tty%s%s::INSTR'%(connectionPars.value['serAdapt'], connectionPars.value['serAd'])
 			inst = rm.open_resource(address)
 			inst.read_termination = k2400.input2unicode(termChar) #needs to be unicode, cf getwidgetValue
 			inst.baud_rate = baudR
@@ -36,7 +32,7 @@ class k2400():
 	
 			#ross add other options here
 		else:
-			raise Exception('connection type %s not suported for SMU'%connectionPars['connectionType'])
+			raise Exception('connection type %s not suported for SMU'%connectionPars.value['connectionType'])
 	
 	def input2unicode(s):
 		s = s.replace('\\r','\r')
@@ -59,7 +55,7 @@ class k2400():
 		return a
 
 	
-	def measI(self, pars):
+	def measV(self, pars):
 		'''take a current measurement at fixed voltage V'''
 		self.write(':SYST:BEEP:STAT OFF') #TURN OFF annoying beeb
 		self.write(':TRIG:COUN 1')	#set to output 1 pulse
@@ -77,5 +73,45 @@ class k2400():
 		v, i =[float(x) for x in self.query('READ?').split(',')] #break data str into values
 		self.write('OUTP OFF')
 		return v, i
-
 	
+	def measIVsweep(self, pars):
+		'''make an IV sweep'''
+		self.write(':SYST:BEEP:STAT OFF') #TURN OFF annoying beeb
+		self.write("ROUTe:TERM %s"%pars['route']) #select front/rear channel
+		self.write("SENS:FUNC:CONC OFF") # measure only sens not sour
+		self.write("SYST:RSEN %s"%pars['4wire']) #4 wire measurement or two wire?
+	
+		self.write("SOUR:FUNC VOLT")    #voltage source function
+		self.write("SENS:FUNC 'CURR:DC'") #current sense function
+		self.write("SENS:CURR:PROT 0.1")    #current compliance in A
+	
+		if float(pars['initialV'])<float(pars['finalV']):
+			direction = 'UP'
+		else: 
+			direction = 'DOWN'
+	
+		#Sweep Settings: sweep structure seems to trig, delay, trig delay
+		self.write("SOUR:VOLT:STARt %s"%pars['initialV']) # in V 
+		self.write("SOUR:VOLT:STOP %s"%pars['finalV']) # in V
+		self.write("SOUR:VOLT:STEP %s"%pars['stepSize']) # in V       
+		self.write("SOUR:DEL %s"%pars['holdTime']) # delay in s
+		time.sleep(2)
+		print('npoints',self.query("SOUR:SWE:POIN?"))
+		self.write("TRIG:COUN %s"%self.query("SOUR:SWE:POIN?")) # set trigger to number of points in sweep
+		self.write("SOUR:VOLT:MODE SWE")    #select voltage sweep mode
+		self.write("SOUR:SWE:RANG AUTO")    #Auto source ranging
+		self.write("SOUR:SWE:SPAC LIN")    #linear sweep
+		self.write("SOUR:SWE:DIR %s"%direction) #up/down
+	
+		self.write("FORM:ELEM VOLT,CURR") #configure what READ will return, RES problematic
+	
+		#measure
+		self.write("OUTP ON")    #turns on SMU at SOUR:VOL:STARtrig
+		# READtriggers sweep (INIT) + (FETCH) data
+		self.query('*OPC?') #check op complete
+		data = np.fromstring(self.query("READ?"), sep =',') #convert str to np.array
+		i_data = data[1::2]
+		v_data = data[::2]
+		#
+		#        self.write("SOUR:VOLT 0")
+		return v_data,i_data 	

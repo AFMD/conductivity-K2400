@@ -2,7 +2,7 @@ key,value,units,fmf_name,fmf_category
 exp_name,experiment,,,*reference
 sample,Sample,,,*reference
 user,warrenr,,,*reference
-date,2016-11-14 16:47:18.274341,,,*reference
+date,2016-11-15 11:32:43.187907,,,*reference
 setup,inSituEcho,,setup,*setup
 vers,0,,setup,*setup
 loc,"AFMD lab, ECHO",,setup,*setup
@@ -14,12 +14,12 @@ firstV,V,Vstart,Parameters,*parameters
 lastV,V,Vend,Parameters,*parameters
 stepSize,V,Vstep,Parameters,*parameters
 holdTime,s,holdTime,Parameters,*parameters
-baudR,baudRate,baudRate,setup,*setup
-termChar,termChar,termChar,setup,*setup
-connectionType,Connection,Connection,setup,*setup
+baudR,57600,baudRate,setup,*setup
+termChar,\r,termChar,setup,*setup
+connectionType,Serial,Connection,setup,*setup
 4wire,Four wire,,setup,*setup
-serAdapt,,,setup,*setup
-serAd,,,setup,*setup
+serAdapt,USB,,setup,*setup
+serAd,0,,setup,*setup
 fixedV,1.0,V,Vsource,*parameters
 nRepeats,20,,Parameters,*parameters
 pauseTime,0.5,s,Time between measurements,*parameters
