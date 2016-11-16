@@ -22,14 +22,18 @@ class k2400():
 	def inst_connect(rm, connectionPars):
 		'''function to return a pyvisa Resource given some pars currently only works for serial'''
 		if str(connectionPars.value['connectionType']) == 'Serial':
-			baudR = int(connectionPars.value['baudR'])
-			termChar = connectionPars.value['termChar']
-			address = 'ASRL/dev/tty%s%s::INSTR'%(connectionPars.value['serAdapt'], connectionPars.value['serAd'])
-			inst = rm.open_resource(address)
-			inst.read_termination = k2400.input2unicode(termChar) #needs to be unicode, cf getwidgetValue
-			inst.baud_rate = baudR
+			try:
+				baudR = int(connectionPars.value['baudR'])
+				termChar = connectionPars.value['termChar']
+				address = 'ASRL/dev/tty%s%s::INSTR'%(connectionPars.value['serAdapt'], connectionPars.value['serAd'])
+				inst = rm.open_resource(address)
+				inst.read_termination = k2400.input2unicode(termChar) #needs to be unicode, cf getwidgetValue
+				inst.baud_rate = baudR
+				return inst
+			except:
+				print('### Problem connecting to Keithely ###')
 	
-			return inst
+			
 	
 			#ross add other options here
 		else:

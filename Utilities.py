@@ -55,7 +55,7 @@ def pandas_2fmfHeader(df):
 	header = '; -*- coding: utf-8; fmf-version: 1.0 -*-\n'
 	for cat in fmf_cats:
 		header+='\n['+cat+']\n'
-		s= df[df.fmf_category == cat].formated#mask (series)
+		s= df[df.fmf_category == cat].formated #mask (series)
 		if not len(s) ==0:
 			sub_cat= s.to_string(header = False, index = False)
 		#strip white spaces at start of lines from pandas justify
@@ -68,7 +68,7 @@ def pandas_2fmfHeader(df):
 def generate_file_name(df, _dir = 0):
 	''' Generate a file name without overwriting'''
 	_dict = df.value
-	fname = _dict['date'].split(' ')[0]+'-'+_dict['user']+'-'+_dict['meas']
+	fname = _dict['date'].split(' ')[0]+'-'+_dict['user']+'-'+_dict['exp_name']+'-'+_dict['setup']
 	if not _dir: _dir = _dict['sav_loc']
 
 	overwrite, i = True, 0
@@ -83,22 +83,23 @@ def save_to_file(inptMgerDf, x, y):
 
 	hdr = pandas_2fmfHeader(inptMgerDf)
 	data = np.column_stack((x,y))
-	format = ['%.6e']*data.shape[1]#number of columns
+	format = ['%.6g']*data.shape[1]#number of columns
 
 	#save to user location
 	f = generate_file_name(inptMgerDf)
 	np.savetxt(f,data, delimiter = '\t', fmt = format, header = hdr, comments = '')
+	print ('Data has been saved locally: ', f)
+	
 	#save to group drive
 	try: 
-		y_address= '\\dc3.physics.ox.ac.uk\dfs\DAQ\CondensedMatterGroups\MRGroup\TPV_data\\'
-		y_address+= inptMgerDf.loc['user'].value + '\\'
+		y_address= '\\dc3.physics.ox.ac.uk\dfs\DAQ\CondensedMatterGroups\MRGroup\Transistor_data\\'
+		y_address+= inptMgerDf.loc['exp_name'].value + '\\' + inptMgerDf.loc['user'].value + '\\'
 		f = generate_file_name(inptMgerDf, y_address)
 		np.savetxt(f, data, delimiter = '\t', fmt = format, header = hdr, comments = '')
-	except PermissionError: #user does not have access to Y:
-		y_address= 'C:\DAQ\TPV_data\\'
-		y_address+= inptMgerDf.loc['user'].value + '\\'
-		f = generate_file_name(inptMgerDf, y_address)
-		np.savetxt(f, data, delimiter = '\t', fmt = format, header = hdr, comments = '')
+		print ('Data has been saved remotely: ', f)
+		
+	except:
+		print ('Data has not be saved remotely.')
 
 
 def getWidgetValue(w):
@@ -110,7 +111,7 @@ def getWidgetValue(w):
 	elif type(w) == QComboBox:
 		return str(w.currentText())
 	elif type(w) == QRadioButton or type(w) == QCheckBox:
-		return bool(w.isChecked())
+		return bool(w.isChecked())	
 
 	else:
 		#print('oops: unexpected widget type %s at Utilities.getWidgetValue'%type(w))
@@ -123,9 +124,11 @@ def setWidgetValue(w, v):
 	elif type(w) == QSpinBox or type(w) == QDoubleSpinBox:
 		w.setValue(float(v))
 	elif type(w) == QComboBox:
-		pass #kind of annoying as these work in index, need to loop until find right indx	
+		pass #kind of annoying as these work in index, need to loop until find right index	
 	elif type(w) == QRadioButton or type(w) == QCheckBox:
-		return w.setChecked(bool(v))
+		if v == 'False': w.setChecked(False)
+		if v == 'True': w.setChecked(True)
+	
 
 #test
 def testModule():

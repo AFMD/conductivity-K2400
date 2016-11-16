@@ -43,7 +43,7 @@ class IV_Engine():
             data = t, v, i
             self.newfixedVDataPoint.emit(data) # for live update
             time.sleep(float(self.user_parameters.value['pauseTime'])) #Time between measurements
-        data = v, i
+        data = t, i
         self.endData.emit(data)
         return v, i
     

@@ -61,11 +61,11 @@ class programSetup(QObject):
         self.gui.mainWindow.button_1.clicked.connect(self.gui.getInputs) # get inputs before running work
         self.gui.mainWindow.button_1.clicked.connect(self.worker1.startWork) # run worker
         
-        self.gui.mainWindow.button_2.clicked.connect(self.gui.getInputs) # get inputs before running work
-        self.gui.mainWindow.button_2.clicked.connect(self.worker2.startWork) # run work
+        #self.gui.mainWindow.button_2.clicked.connect(self.gui.getInputs) # get inputs before running work
+        #self.gui.mainWindow.button_2.clicked.connect(self.worker2.startWork) # run work
         
         self.gui.mainWindow.button_cancel1.clicked.connect(self.forceWorkerReset1)
-        self.gui.mainWindow.button_cancel2.clicked.connect(self.forceWorkerReset2)
+        #self.gui.mainWindow.button_cancel2.clicked.connect(self.forceWorkerReset2)
         self.gui.mainWindow.pushButtonSave.clicked.connect(self.gui.selectFile)
         
         self.gui.mainWindow.pushButton_save.clicked.connect(self.gui.getInputs) # Save settings        
@@ -169,6 +169,8 @@ class WorkerObject2(QObject):
 
 class mainWindow(QMainWindow):
     '''Main applicaiton window'''
+    
+    signalStatus = pyqtSignal(str)
 
     def __init__(self, parent = None):
         
@@ -213,26 +215,51 @@ class mainWindow(QMainWindow):
         self.inputManager.loc['user'].value = str(getpass.getuser())
         self.inputManager.loc['vers'].value = __version__
         
+        if self.mainWindow.checkBox_IV.isChecked() == True and self.mainWindow.checkBox_fixedV.isChecked() == True:
+            self.inputManager.loc['setup'].value = str('IVsweep_FixedV')
+        
+        if self.mainWindow.checkBox_IV.isChecked() == True and self.mainWindow.checkBox_fixedV.isChecked() == False:
+            self.inputManager.loc['setup'].value = str('IVsweep')
+            self.inputManager.loc['fixedV'].value = str('')
+            self.inputManager.loc['nRepeats'].value = str('')
+            self.inputManager.loc['pauseTime'].value = str('')
+            
+            
+        if self.mainWindow.checkBox_IV.isChecked() == False and self.mainWindow.checkBox_fixedV.isChecked() == True:
+            self.inputManager.loc['setup'].value = str('FixedV')
+            self.inputManager.loc['initialV'].value = str('')
+            self.inputManager.loc['finalV'].value = str('')
+            self.inputManager.loc['stepSize'].value = str('')            
+            self.inputManager.loc['holdTime'].value = str('')            
+            self.inputManager.loc['x_descript'].value = str('Sample')            
+            self.inputManager.loc['x_descript'].units = str('')            
+            
         mainWindow.saveState(self)
         
         
     @pyqtSlot()
     def saveState(self):
         ''' Save current inputs to csv '''
-        hdr =  ' --- Insitu ECHO meas template for data-frame used to store inputs and write file header - change at your own risk---,,,,'
-        with open('df_measurement.csv','w') as f:
-            f.write(hdr + '\n')
-        self.inputManager.to_csv('df_measurement.csv', mode = 'a', na_rep = ' ') #append (hdr)
+        try:
+            hdr =  ' --- Insitu ECHO meas template for data-frame used to store inputs and write file header - change at your own risk---,,,,'
+            with open('df_measurement.csv','w') as f:
+                f.write(hdr + '\n')
+            self.inputManager.to_csv('df_measurement.csv', mode = 'a', na_rep = ' ') #append (hdr)
+        except:
+            print ('Settings NOT saved. Please check df_template status.')
 
     @pyqtSlot()
     def restoreState(self):
         ''' write inputManager values to user input widgets.
                 input widget values saved on close to inputManager csv'''
-        self.inputManager = pd.DataFrame.from_csv('df_measurement.csv', header = 1)
-        fields = list(self.inputManager.index)
-        for w in self.inputWidgets:
-            field = w.accessibleName()
-            Utilities.setWidgetValue(w, self.inputManager.loc[field].value)        
+        try:
+            self.inputManager = pd.DataFrame.from_csv('df_measurement.csv', header = 1)
+            fields = list(self.inputManager.index)
+            for w in self.inputWidgets:
+                field = w.accessibleName()
+                Utilities.setWidgetValue(w, self.inputManager.loc[field].value)
+        except:
+            pass           
         
         
         
@@ -240,21 +267,10 @@ class mainWindow(QMainWindow):
     def saveData(self, dat):
         '''Save final data array'''
         if self.mainWindow.checkBoxSave.isChecked():
-            data2save = np.column_stack((dat[0],dat[1]))
-            format = ['%.5g']*data2save.shape[1] # number of columns
-            
-            try:
-                directory = self.mainWindow.lineEditSave.text()
-                filename = 'testing.txt'
-                savepath = str(directory+filename)
-                np.savetxt(savepath, data2save, delimiter='\t')
-                print ('Data saved:', savepath)
-            except:
-                pass # need to add user proof options
-            
-        else: 
-            print ('Data not saved')
-            
+            Utilities.save_to_file(self.inputManager, dat[0], dat[1])
+        else:
+            print ('### Data has not been saved. ###')
+
             
     @pyqtSlot()
     def selectFile(self):
