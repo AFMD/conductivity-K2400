@@ -1,20 +1,20 @@
  --- Insitu ECHO meas template for data-frame used to store inputs and write file header - change at your own risk---,,,,
 key,value,units,fmf_name,fmf_category
-exp_name,test, ,Experiment,*reference
-sample,test, ,Sample,*reference
+exp_name,testing, ,Experiment,*reference
+sample,1, ,Sample,*reference
 user,warrenr, ,User,*reference
-date,2016-11-16 11:09:12.245502, ,Date,*reference
-setup,FixedV, ,Experimental_setup,setup
+date,2016-11-16 13:44:26.468618, ,Date,*reference
+setup,IVsweep, ,Experimental_setup,setup
 vers,0, ,Software_version,setup
 loc,"AFMD lab, ECHO", ,Location,setup
-x_descript,Sample,,X_column,*data definitions
+x_descript,V,/V,X_column,*data definitions
 y_descript,I,/A,Y_column,*data definitions
 sav_loc,/home/warrenr/git/transistor_tools/, , , 
 rec_len, , , , 
-initialV,, V,Initial_V,parameters
-finalV,, V,Final_V,parameters
-stepSize,, V,V_step,parameters
-holdTime,, s,Hold_time,parameters
+initialV,-10.0, V,Initial_V,parameters
+finalV,10.0, V,Final_V,parameters
+stepSize,0.5, V,V_step,parameters
+holdTime,0.1, s,Hold_time,parameters
 baudR,57600,baudRate,setup,*setup
 termChar,\r,termChar,setup,*setup
 connectionType,Serial,Connection,setup,*setup
@@ -22,8 +22,8 @@ connectionType,Serial,Connection,setup,*setup
 route,Front, ,setup,*setup
 serAdapt,USB, ,setup,*setup
 serAd,0, ,setup,*setup
-takefixedV,True, ,Parameters,*parameters
-takeIVsweep,False, ,Parameters,*parameters
-fixedV,1.0, V,Fixed_Voltage,parameters
-nRepeats,20, ,Number of Samples,parameters
-pauseTime,0.5, s,Time_between_fixed_voltage_measurements,parameters
+takefixedV,False, ,Parameters,*parameters
+takeIVsweep,True, ,Parameters,*parameters
+fixedV,, V,Fixed_Voltage,parameters
+nRepeats,, ,Number of Samples,parameters
+pauseTime,, s,Time_between_fixed_voltage_measurements,parameters

@@ -36,7 +36,7 @@ class k2400():
 			
 	
 			#ross add other options here
-		else:
+		else:	
 			raise Exception('connection type %s not suported for SMU'%connectionPars.value['connectionType'])
 	
 	def input2unicode(s):

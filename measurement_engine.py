@@ -86,7 +86,7 @@ class IV_Engine():
         
         print ('Voltage [V]', '\t', 'Current [A]')
         for n in range(len(v)):
-            print (data[0][n], '\t', '%.4f' %data[1][n])
+            print (data[0][n], '\t', '%.4g' %data[1][n])
         
         self.newIVData.emit(data) # for graph update
         self.endData.emit(data)

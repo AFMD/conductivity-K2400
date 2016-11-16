@@ -257,7 +257,8 @@ class mainWindow(QMainWindow):
             fields = list(self.inputManager.index)
             for w in self.inputWidgets:
                 field = w.accessibleName()
-                Utilities.setWidgetValue(w, self.inputManager.loc[field].value)
+                if self.inputManager.loc[field].value != '':
+                    Utilities.setWidgetValue(w, self.inputManager.loc[field].value)
         except:
             pass           
         
