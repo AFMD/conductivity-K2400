@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>639</width>
-    <height>921</height>
+    <height>900</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,61 +30,13 @@
      <attribute name="title">
       <string>Setup</string>
      </attribute>
-     <widget class="QWidget" name="gridLayoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>40</y>
-        <width>561</width>
-        <height>61</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <widget class="QLineEdit" name="lineEditSave">
-         <property name="accessibleName">
-          <string>sav_loc</string>
-         </property>
-         <property name="text">
-          <string>~/git/transistor_tools/testing.fmf</string>
-         </property>
-         <property name="readOnly">
-          <bool>false</bool>
-         </property>
-         <property name="placeholderText">
-          <string>&lt;save directory&gt;</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QCheckBox" name="checkBoxSave">
-         <property name="accessibleName">
-          <string>saveData</string>
-         </property>
-         <property name="text">
-          <string>Save data</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="pushButtonSave">
-         <property name="text">
-          <string>Browse</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
      <widget class="QGroupBox" name="groupBox">
       <property name="geometry">
        <rect>
-        <x>60</x>
-        <y>140</y>
+        <x>50</x>
+        <y>200</y>
         <width>509</width>
-        <height>581</height>
+        <height>531</height>
        </rect>
       </property>
       <property name="title">
@@ -94,9 +46,9 @@
        <property name="geometry">
         <rect>
          <x>20</x>
-         <y>30</y>
+         <y>40</y>
          <width>461</width>
-         <height>551</height>
+         <height>491</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -418,79 +370,13 @@
            </widget>
           </widget>
           <widget class="QWidget" name="page_keithley">
-           <widget class="QWidget" name="verticalLayoutWidget_5">
+           <widget class="QWidget" name="verticalLayoutWidget_6">
             <property name="geometry">
              <rect>
               <x>20</x>
               <y>20</y>
               <width>421</width>
-              <height>141</height>
-             </rect>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_4">
-             <item>
-              <widget class="QLabel" name="label_19">
-               <property name="font">
-                <font>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Meta Data info</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <layout class="QGridLayout" name="gridLayout_6">
-               <item row="0" column="0">
-                <widget class="QLabel" name="label_21">
-                 <property name="text">
-                  <string>Experiment Name</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="label_23">
-                 <property name="text">
-                  <string>Sample</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QLineEdit" name="lineEdit_2">
-                 <property name="accessibleName">
-                  <string>exp_name</string>
-                 </property>
-                 <property name="text">
-                  <string/>
-                 </property>
-                 <property name="placeholderText">
-                  <string>&lt; Type of Measurement &gt;</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QLineEdit" name="lineEdit_3">
-                 <property name="accessibleName">
-                  <string>sample</string>
-                 </property>
-                 <property name="placeholderText">
-                  <string>&lt; Sample name &gt;</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="verticalLayoutWidget_6">
-            <property name="geometry">
-             <rect>
-              <x>20</x>
-              <y>180</y>
-              <width>421</width>
-              <height>311</height>
+              <height>405</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -503,23 +389,23 @@
                 </font>
                </property>
                <property name="text">
-                <string>Keithley Connection</string>
+                <string>Connection</string>
                </property>
               </widget>
              </item>
              <item>
               <layout class="QGridLayout" name="gridLayout_5">
-               <item row="3" column="0">
-                <widget class="QLabel" name="label_13">
-                 <property name="text">
-                  <string>Baud Rate</string>
-                 </property>
-                </widget>
-               </item>
                <item row="0" column="0">
                 <widget class="QLabel" name="label_12">
                  <property name="text">
                   <string>Connection type</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_13">
+                 <property name="text">
+                  <string>Baud Rate</string>
                  </property>
                 </widget>
                </item>
@@ -538,29 +424,10 @@
                <item row="2" column="0">
                 <widget class="QLabel" name="label_16">
                  <property name="accessibleName">
-                  <string>serAd</string>
+                  <string/>
                  </property>
                  <property name="text">
                   <string>Serial Ad</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QComboBox" name="comboBox_5">
-                 <property name="accessibleName">
-                  <string>serAd</string>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>0</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="label_17">
-                 <property name="text">
-                  <string>Terminals</string>
                  </property>
                 </widget>
                </item>
@@ -619,14 +486,81 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
+               <item row="2" column="1">
+                <widget class="QComboBox" name="comboBox_5">
+                 <property name="accessibleName">
+                  <string>serAd</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>0</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_20">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Keithley Parameters</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QGridLayout" name="gridLayout_7">
+               <item row="3" column="0">
+                <widget class="QLabel" name="label_25">
+                 <property name="text">
+                  <string>Compliance</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
                 <widget class="QLabel" name="label_18">
                  <property name="text">
                   <string>Four-wire</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="1" column="1">
+                <widget class="QComboBox" name="comboBox_7">
+                 <property name="accessibleName">
+                  <string>4wire</string>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>Off</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>On</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_17">
+                 <property name="text">
+                  <string>Terminals</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="label_19">
+                 <property name="text">
+                  <string>Integration Time</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
                 <widget class="QComboBox" name="comboBox_6">
                  <property name="accessibleName">
                   <string>route</string>
@@ -643,21 +577,56 @@
                  </item>
                 </widget>
                </item>
-               <item row="6" column="1">
-                <widget class="QComboBox" name="comboBox_7">
+               <item row="2" column="1">
+                <widget class="QComboBox" name="comboBox_8">
                  <property name="accessibleName">
-                  <string>4wire</string>
+                  <string>integrationTime</string>
+                 </property>
+                 <property name="currentIndex">
+                  <number>2</number>
                  </property>
                  <item>
                   <property name="text">
-                   <string>Off</string>
+                   <string>FAST</string>
                   </property>
                  </item>
                  <item>
                   <property name="text">
-                   <string>On</string>
+                   <string>MEDIUM</string>
                   </property>
                  </item>
+                 <item>
+                  <property name="text">
+                   <string>NORMAL</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>HI-ACCURACY</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QSpinBox" name="spinBox">
+                 <property name="accessibleName">
+                  <string>compliance</string>
+                 </property>
+                 <property name="suffix">
+                  <string> A</string>
+                 </property>
+                 <property name="prefix">
+                  <string>1 x 10^</string>
+                 </property>
+                 <property name="minimum">
+                  <number>-9</number>
+                 </property>
+                 <property name="maximum">
+                  <number>1</number>
+                 </property>
+                 <property name="value">
+                  <number>-3</number>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -700,11 +669,111 @@
        </layout>
       </widget>
      </widget>
+     <widget class="QWidget" name="verticalLayoutWidget_5">
+      <property name="geometry">
+       <rect>
+        <x>30</x>
+        <y>40</y>
+        <width>571</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_21">
+           <property name="text">
+            <string>Experiment Name</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_23">
+           <property name="text">
+            <string>Sample</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineEdit_2">
+           <property name="accessibleName">
+            <string>exp_name</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="placeholderText">
+            <string>&lt; Type of Measurement &gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="lineEdit_3">
+           <property name="accessibleName">
+            <string>sample</string>
+           </property>
+           <property name="placeholderText">
+            <string>&lt; Sample name &gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="0" column="0">
+            <widget class="QLineEdit" name="lineEditSave">
+             <property name="accessibleName">
+              <string>sav_loc</string>
+             </property>
+             <property name="text">
+              <string>~/git/transistor_tools/testing.fmf</string>
+             </property>
+             <property name="readOnly">
+              <bool>false</bool>
+             </property>
+             <property name="placeholderText">
+              <string>&lt;save directory&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QCheckBox" name="checkBoxSave">
+             <property name="accessibleName">
+              <string>saveData</string>
+             </property>
+             <property name="text">
+              <string>Save data</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPushButton" name="pushButtonSave">
+             <property name="text">
+              <string>Browse</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_24">
+           <property name="text">
+            <string>Save Location</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="horizontalLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>100</x>
-        <y>750</y>
+        <x>90</x>
+        <y>760</y>
         <width>403</width>
         <height>41</height>
        </rect>

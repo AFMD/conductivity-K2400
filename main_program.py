@@ -102,11 +102,11 @@ class programSetup(QObject):
         print ('Program shutting down safely (maybe)')
         if self.worker_thread1.isRunning():
             self.worker1.stopWork()
-            time.sleep(1) 
+            #time.sleep(0.3) 
             self.worker_thread1.exit()
         if self.worker_thread2.isRunning():
             self.worker2.stopWork()
-            time.sleep(1) 
+            #time.sleep(0.3) 
             self.worker_thread2.exit()
             
             
@@ -209,7 +209,6 @@ class mainWindow(QMainWindow):
                 print ('Input parameter error: ', w.objectName())
             else:
                 pass
-                #print (str(w.accessibleName()), '\t', self.inputManager.loc[str(w.accessibleName())].value)
         
         self.inputManager.loc['date'].value = str(datetime.datetime.now())
         self.inputManager.loc['user'].value = str(getpass.getuser())
@@ -220,19 +219,22 @@ class mainWindow(QMainWindow):
         
         if self.mainWindow.checkBox_IV.isChecked() == True and self.mainWindow.checkBox_fixedV.isChecked() == False:
             self.inputManager.loc['setup'].value = str('IVsweep')
-            self.inputManager.loc['fixedV'].value = str('')
-            self.inputManager.loc['nRepeats'].value = str('')
-            self.inputManager.loc['pauseTime'].value = str('')
+            self.inputManager.loc['fixedV'].value = None
+            self.inputManager.loc['nRepeats'].value = None
+            self.inputManager.loc['pauseTime'].value = None
             
             
         if self.mainWindow.checkBox_IV.isChecked() == False and self.mainWindow.checkBox_fixedV.isChecked() == True:
             self.inputManager.loc['setup'].value = str('FixedV')
-            self.inputManager.loc['initialV'].value = str('')
-            self.inputManager.loc['finalV'].value = str('')
-            self.inputManager.loc['stepSize'].value = str('')            
-            self.inputManager.loc['holdTime'].value = str('')            
+            self.inputManager.loc['initialV'].value = None
+            self.inputManager.loc['finalV'].value = None
+            self.inputManager.loc['stepSize'].value = None           
+            self.inputManager.loc['holdTime'].value = None            
             self.inputManager.loc['x_descript'].value = str('Sample')            
-            self.inputManager.loc['x_descript'].units = str('')            
+            self.inputManager.loc['x_descript'].units = None          
+            
+        if self.inputManager.loc['exp_name'].value == None:
+            pass # what to do if user forgets to put in exp name/sample???
             
         mainWindow.saveState(self)
         
@@ -254,11 +256,11 @@ class mainWindow(QMainWindow):
                 input widget values saved on close to inputManager csv'''
         try:
             self.inputManager = pd.DataFrame.from_csv('df_measurement.csv', header = 1)
-            fields = list(self.inputManager.index)
             for w in self.inputWidgets:
                 field = w.accessibleName()
-                if self.inputManager.loc[field].value != '':
-                    Utilities.setWidgetValue(w, self.inputManager.loc[field].value)
+                if not (str(field) == 'exp_name' or str(field) == 'sample'):
+                    if self.inputManager.loc[field].value != None:
+                        Utilities.setWidgetValue(w, self.inputManager.loc[field].value)
         except:
             pass           
         
