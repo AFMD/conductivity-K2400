@@ -1,15 +1,15 @@
  --- Insitu ECHO meas template for data-frame used to store inputs and write file header - change at your own risk---,,,,
 key,value,units,fmf_name,fmf_category
-exp_name,, ,Experiment,*reference
-sample,, ,Sample,*reference
-user,warrenr, ,User,*reference
-date,2016-11-16 18:47:19.044416, ,Date,*reference
+exp_name,test, ,Experiment,*reference
+sample,1, ,Sample,*reference
+user,ross, ,User,*reference
+date,2016-11-16 22:05:05.610579, ,Date,*reference
 setup,IVsweep_FixedV, ,Experimental_setup,setup
 vers,0, ,Software_version,setup
 loc,"AFMD lab, ECHO", ,Location,setup
 x_descript,V,/V,X_column,*data definitions
 y_descript,I,/A,Y_column,*data definitions
-sav_loc,~/git/transistor_tools/testing.fmf, , , 
+sav_loc,/home/ross/git/transistor_tools/, , , 
 rec_len, , , , 
 initialV,-10.0, V,Initial_V,parameters
 finalV,10.0, V,Final_V,parameters
@@ -19,7 +19,7 @@ baudR,57600,baudRate,setup,*setup
 termChar,\r,termChar,setup,*setup
 connectionType,Serial,Connection,setup,*setup
 4wire,Off, ,Four_wire,setup
-compliance,-3,A,setup, 
+compliance,-2,A,setup, 
 integrationTime,NORMAL, ,setup, 
 route,Front, ,setup,*setup
 serAdapt,USB, ,setup,*setup
