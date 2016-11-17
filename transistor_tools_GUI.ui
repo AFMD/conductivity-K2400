@@ -577,36 +577,6 @@
                  </item>
                 </widget>
                </item>
-               <item row="2" column="1">
-                <widget class="QComboBox" name="comboBox_8">
-                 <property name="accessibleName">
-                  <string>integrationTime</string>
-                 </property>
-                 <property name="currentIndex">
-                  <number>2</number>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>FAST</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>MEDIUM</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>NORMAL</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>HI-ACCURACY</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
                <item row="3" column="1">
                 <widget class="QSpinBox" name="spinBox">
                  <property name="accessibleName">
@@ -627,6 +597,39 @@
                  <property name="value">
                   <number>-3</number>
                  </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QComboBox" name="comboBox_8">
+                 <property name="accessibleName">
+                  <string>integrationTime</string>
+                 </property>
+                 <property name="editable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="currentIndex">
+                  <number>2</number>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>0.01</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>0.1</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>10</string>
+                  </property>
+                 </item>
                 </widget>
                </item>
               </layout>
@@ -726,7 +729,7 @@
               <string>sav_loc</string>
              </property>
              <property name="text">
-              <string>~/git/transistor_tools/testing.fmf</string>
+              <string>~/git/transistor_tools/</string>
              </property>
              <property name="readOnly">
               <bool>false</bool>

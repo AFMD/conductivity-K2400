@@ -69,7 +69,8 @@ class k2400():
 		self.write(':SOUR:VOLT:MODE FIXED') #fixed voltage source mode
 		self.write(':SOUR:VOLT:RANG:AUTO ON') #auto range for voltage
 		self.write(':SOUR:VOLT:LEV %s'%pars['fixedV']) #choose voltage for measurement
-		self.write(':SENS:CURR:PROT 100E-3') # 100mA compliance - is this good???
+		self.write(':SENS:CURR:PROT 1E%s'%pars['compliance']) # Sets compliance for measurement
+		self.write(':SENS:NPLC %s'%pars['integrationTime']) # Sets integration time for measurement
 		self.write(':SENS:FUNC "CURR"') #Choose current measurement function
 		self.write(':SENS:CURR:RANG:AUTO ON') #Autorange for current measuremnet
 		self.write(':FORM:ELEM VOLT,CURR') #voltage and current reading
@@ -88,7 +89,8 @@ class k2400():
 	
 		self.write("SOUR:FUNC VOLT")    #voltage source function
 		self.write("SENS:FUNC 'CURR:DC'") #current sense function
-		self.write("SENS:CURR:PROT 0.1")    #current compliance in A
+		self.write("SENS:CURR:PROT 1E%s"%pars['compliance'])    # current compliance in A
+		self.write("SENS:NPLC %s"%pars['integrationTime']) # Sets integration time for measurement
 	
 		if float(pars['initialV'])<float(pars['finalV']):
 			direction = 'UP'

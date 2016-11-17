@@ -19,8 +19,8 @@ baudR,,baudRate,setup,*setup
 termChar,termChar,termChar,setup,*setup
 connectionType,Connection,Connection,setup,*setup
 4wire,Four wire,,Four_wire,setup
-compliance,,A,setup
-integrationTime,,,setup
+compliance,,,Compliance Exponent,setup
+integrationTime,,,Integration Time,setup
 route,Front,,setup,*setup
 serAdapt,NA,NA,setup,*setup
 serAd,NA,NA,setup,*setup
