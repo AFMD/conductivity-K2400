@@ -9,13 +9,14 @@ import time
 import random
 import numpy as np
 
-from k2400_control import * # conductivity engine controls keithley
+from src.k2400_control import * # conductivity engine controls keithley
 
 class IV_Engine():
     '''Routine for fixed-voltage measurements and IV sweep'''
     def __init__(self, parent=None):
-        self._flag1 = False
-        sys.stdout = EmittingStream(textWritten=self.write) #redirect console print to UI
+        #self._flag1 = False
+        #sys.stdout = EmittingStream(textWritten=self.write) #redirect console print to UI
+        pass
         
     def connect2Keith(self):
         smu, rm = k2400.connect_SMU(self.user_parameters)
@@ -23,20 +24,20 @@ class IV_Engine():
         return smu, rm
     
     def measure_fixedV(self, smu):
-        
-        print ('Commencing fixed voltage measurements...')
+    
+        self.KeithleyConsole.emit('Commencing fixed voltage measurements...')
         self.signalStatus.emit('Running fixed voltage measurement...')
-        print ('Sample', '\t', 'Voltage [V]', '\t', 'Current [A]')
+        self.KeithleyConsole.emit('Sample', '\t', 'Voltage [V]', '\t', 'Current [A]')
         v = []
         i = []
         t = []
         for n in range ((int(self.user_parameters.value['nRepeats']))):
             if self._flag: 
                 self.signalStatus.emit('Stopped.')
-                print ('Measurement aborted')
+                self.KeithleyConsole.emit('Measurement aborted')
                 return v, i
             vv, ii = smu.measV(self.user_parameters.value)
-            print (n, '\t', vv, '\t', '%.4g' %ii)
+            self.KeithleyConsole.emit(n, '\t', vv, '\t', '%.4g' %ii)
             v.append(float(vv))
             i.append(float(ii))
             t.append(int(n))
@@ -47,46 +48,23 @@ class IV_Engine():
         self.endData.emit(data)
         return v, i
     
-    def measure_fixedV_test(self):
-        
-        print ('Commencing data aquisition...')
-        v = []
-        i = []
-        for n in range (int(self.user_parameters.value['nRepeats'])):
-            if self._flag: 
-                self.signalStatus.emit('Stopped.')
-                print ('Measurement aborted')
-                self.endData.emit(data)
-                return
-            
-            ii = random.gauss((float(self.user_parameters.value['fixedV'])), 5)
-            vv = n
-            print (vv, '\t', '%.4f' %ii)
-            v.append(float(vv))
-            i.append(float(ii))
-            data = v, i
-            self.newDataPoint.emit(data) # for live update
-            time.sleep(float(self.user_parameters.value['pauseTime']))
-        data = v, i
-        self.endData.emit(data)
-        return data
-    
     def measure_IVsweep(self, smu):
         
-        print ('Commencing IV Sweep...')
+        
+        self.KeithleyConsole.emit('Commencing IV Sweep...')
         
         v = []
         i = []
         if self._flag: 
             self.signalStatus.emit('Stopped.')
-            print ('Measurement aborted')
+            self.KeithleyConsole.emit('Measurement aborted')
             return v, i
         v, i = smu.measIVsweep(self.user_parameters.value)
         data = v, i
         
-        print ('Voltage [V]', '\t', 'Current [A]')
+        self.KeithleyConsole.emit('Voltage [V]', '\t', 'Current [A]')
         for n in range(len(v)):
-            print (data[0][n], '\t', '%.4g' %data[1][n])
+            self.KeithleyConsole.emit(data[0][n], '\t', '%.4g' %data[1][n])
         
         self.newIVData.emit(data) # for graph update
         self.endData.emit(data)

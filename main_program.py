@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '0'
+__version__ = '1'
 
 '''
-Main program for Transistor measurement control. This creates and controls the threads and GUI.
+Transistor tools. This creates and controls the threads and GUI.
 '''
 
 import os
@@ -16,15 +16,15 @@ from PyQt4.QtCore import *
 import numpy as np
 import pandas as pd
 
-
-from measurement_engine import * # conductivity measurements
-from transistor_tools_GUI import * # GUI design created QtDesigner
-import Utilities # utilities file mainly for handling fmf format
+from src.inficon_engine import * # inficon engine (imports inficon drivers)
+from src.measurement_engine import * # conductivity engine (import Keithley drivers)
+from src.transistor_tools_GUI import * # GUI design created QtDesigner
+import src.Utilities as Utilities # utilities file mainly for handling fmf format
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
-import matplotlibwidget
+import src.matplotlibwidget
 
 
 class programSetup(QObject):
@@ -42,7 +42,7 @@ class programSetup(QObject):
         self.worker1 = keithleyWorker() 
         self.worker_thread1 = QThread()
         
-        self.worker2 = WorkerObject2() 
+        self.worker2 = inficonWorker() 
         self.worker_thread2 = QThread()        
         
         # Move worker object to worker thread and start worker_thread.
@@ -58,43 +58,42 @@ class programSetup(QObject):
         self.gui.show()
         
     def _connectSignals(self): 
+        # Keithley connections
         self.gui.mainWindow.button_1.clicked.connect(self.gui.getInputs) # get inputs before running work
         self.gui.mainWindow.button_1.clicked.connect(self.worker1.startWork) # run worker
-        
-        #self.gui.mainWindow.button_2.clicked.connect(self.gui.getInputs) # get inputs before running work
-        #self.gui.mainWindow.button_2.clicked.connect(self.worker2.startWork) # run work
-        
         self.gui.mainWindow.button_cancel1.clicked.connect(self.forceWorkerReset1)
-        #self.gui.mainWindow.button_cancel2.clicked.connect(self.forceWorkerReset2)
         self.gui.mainWindow.pushButtonSave.clicked.connect(self.gui.selectFile)
-        
         self.gui.mainWindow.pushButton_save.clicked.connect(self.gui.getInputs) # Save settings        
         self.gui.mainWindow.pushButton_load.clicked.connect(self.gui.restoreState) # Restore settings
-        
-        self.signalStatus.connect(self.gui.updateStatus)
-        self.worker1.signalStatus.connect(self.gui.updateStatus)
-        self.worker2.signalStatus.connect(self.gui.updateStatus)
-        self.parent().aboutToQuit.connect(self.forceQuit)
-        
         self.worker1.endData.connect(self.gui.saveData)
         self.worker1.newfixedVDataPoint.connect(self.gui.plotPoint)
-        self.worker1.newIVData.connect(self.gui.plotIV)   
-        
+        self.worker1.newIVData.connect(self.gui.plotIV)           
+        self.signalStatus.connect(self.gui.updateStatus)
+        # Inficon connections
+        self.gui.mainWindow.pushButton_QCMStart.clicked.connect(self.gui.getInputs) # get inputs before running work
+        self.gui.mainWindow.pushButton_QCMStart.clicked.connect(self.worker2.startWork)
+        self.gui.mainWindow.pushButton_QCMStop.clicked.connect(self.forceWorkerReset2)
+        self.worker2.endDepositionData.connect(self.gui.saveDepositionData)
+        self.worker2.newDepositionDataPoint.connect(self.gui.plotDepositionPoint)
+        #General GUI connections
+        self.worker1.signalStatus.connect(self.gui.updateStatus)
+        self.worker2.signalStatus.connect(self.gui.updateStatus)
+        self.worker2.InficonConsole.connect(self.gui.writeInficonConsole)
+        self.worker1.KeithleyConsole.connect(self.gui.writeKeithleyConsole)
+        self.parent().aboutToQuit.connect(self.forceQuit)
         
 
-        self.worker2.endData.connect(self.gui.saveData)
-        self.worker2.newDataPoint.connect(self.gui.plotPoint)
-        
+
         
     def forceWorkerReset1(self):
         if self.worker_thread1.isRunning():
             self.worker1.stopWork()
-            self.signalStatus.emit('Measurement: Idle')
+            self.signalStatus.emit('Keithley thread: Idle')
             
     def forceWorkerReset2(self):
         if self.worker_thread2.isRunning():
             self.worker2.stopWork()
-            self.signalStatus.emit('Thread 2: Idle')
+            self.signalStatus.emit('Inficon thread: Idle')
             
             
     def forceQuit(self):
@@ -114,6 +113,7 @@ class programSetup(QObject):
 class keithleyWorker(QObject):
     '''IV data aquisition worker'''
     
+    KeithleyConsole = pyqtSignal(str)
     signalStatus = pyqtSignal(str)
     endData = pyqtSignal(object)
     newfixedVDataPoint = pyqtSignal(object)
@@ -127,7 +127,7 @@ class keithleyWorker(QObject):
     def startWork(self):
         
         self._flag = False
-        self.user_parameters = pd.DataFrame.from_csv('df_measurement.csv', header=1) # Get input parameters from df_measurement
+        self.user_parameters = pd.DataFrame.from_csv('src/df_measurement.csv', header=1) # Get input parameters from df_measurement
         smu, rm = IV_Engine.connect2Keith(self)
         
         if self.user_parameters.value['takeIVsweep'] == 'True':
@@ -143,24 +143,24 @@ class keithleyWorker(QObject):
         self._flag = True
         
         
-class WorkerObject2(QObject):
+class inficonWorker(QObject):
     
     signalStatus = pyqtSignal(str)
-    endData = pyqtSignal(object)
-    newDataPoint = pyqtSignal(object)
-    askParameters = pyqtSignal(object)
+    InficonConsole = pyqtSignal(str)
+    endDepositionData = pyqtSignal(object)
+    newDepositionDataPoint = pyqtSignal(object)
+    #askParameters = pyqtSignal(object)
     
     def __init__(self, parent=None):
         super(self.__class__, self).__init__(parent)
         
-
     @pyqtSlot()        
     def startWork(self):
         self._flag = False
-        self.signalStatus.emit('Running worker2...')
-        self.user_parameters = pd.DataFrame.from_csv('df_measurement.csv')
-        IV_Engine.measure_fixedV_test(self)
-        
+        self.signalStatus.emit('Inficon thread running...')
+        self.user_parameters = pd.DataFrame.from_csv('src/df_measurement.csv', header=1) # Get input parameters from df_measurement
+        thickness = inficon_engine.monitor_QCM(self)
+        self.InficonConsole.emit('Thickness monitoring complete.')
         
     @pyqtSlot()
     def stopWork(self):
@@ -178,11 +178,10 @@ class mainWindow(QMainWindow):
         super(mainWindow, self).__init__(parent)
         self.mainWindow = Ui_MainWindow()
         self.mainWindow.setupUi(self)
-        sys.stdout = EmittingStream(textWritten=self.write) #redirect console print to UI
-        self.setUpPlot()
+        #sys.stdout = EmittingStream(textWritten=self.write) #redirect console print to UI
         
         ### Widget and fmf definitions ###
-        self.inputManager = pd.DataFrame.from_csv('df_template.csv', header=1) # object for metadata
+        self.inputManager = pd.DataFrame.from_csv('src/df_template.csv', header=1) # object for metadata
         fields = list(self.inputManager.index) # create a list of the indices in the metadata file
         self.inputWidgets = [w for w in self.findChildren(QWidget) if str(w.accessibleName()) in fields] # creates list of all QWidgets in GUI        
         
@@ -192,11 +191,20 @@ class mainWindow(QMainWindow):
         self.mainWindow.statusBar.showMessage(status)
         
     @pyqtSlot(str)
-    def write(self, s):
+    def writeKeithleyConsole(self, s):
         '''write text to text slot in UI'''
         self.mainWindow.plainTextEdit.moveCursor(QTextCursor.End)
         self.mainWindow.plainTextEdit.ensureCursorVisible()
         self.mainWindow.plainTextEdit.insertPlainText(s)
+        self.mainWindow.plainTextEdit.insertPlainText('\n')
+        
+    @pyqtSlot(str)
+    def writeInficonConsole(self, s):
+        '''write text to Inficon text slot in UI'''
+        self.mainWindow.plainTextEdit_2.moveCursor(QTextCursor.End)
+        self.mainWindow.plainTextEdit_2.ensureCursorVisible()
+        self.mainWindow.plainTextEdit_2.insertPlainText(s) 
+        self.mainWindow.plainTextEdit_2.insertPlainText('\n')
         
     @pyqtSlot(object)
     def getInputs(self):
@@ -231,7 +239,22 @@ class mainWindow(QMainWindow):
             self.inputManager.loc['stepSize'].value = None           
             self.inputManager.loc['holdTime'].value = None            
             self.inputManager.loc['x_descript'].value = str('Sample')            
-            self.inputManager.loc['x_descript'].units = None          
+            self.inputManager.loc['x_descript'].units = None     
+            
+        if self.mainWindow.checkBox_IV.isChecked() == False and self.mainWindow.checkBox_fixedV.isChecked() == False:
+            self.inputManager.loc['setup'].value = str('DepositionMonitoring')
+            self.inputManager.loc['fixedV'].value = None
+            self.inputManager.loc['nRepeats'].value = None
+            self.inputManager.loc['pauseTime'].value = None
+            self.inputManager.loc['initialV'].value = None
+            self.inputManager.loc['finalV'].value = None
+            self.inputManager.loc['stepSize'].value = None           
+            self.inputManager.loc['holdTime'].value = None            
+            self.inputManager.loc['x_descript'].value = str('Time')  
+            self.inputManager.loc['x_descript'].units = str('s')
+            self.inputManager.loc['y_descript'].value = str('QCM1 thickness, QCM1 rate, QCM2 thickness, QCM2 rate, etc.')                
+            self.inputManager.loc['y_descript'].units = str('')           
+            
             
         if self.inputManager.loc['exp_name'].value == None:
             pass # what to do if user forgets to put in exp name/sample???
@@ -244,9 +267,9 @@ class mainWindow(QMainWindow):
         ''' Save current inputs to csv '''
         try:
             hdr =  ' --- Insitu ECHO meas template for data-frame used to store inputs and write file header - change at your own risk---,,,,'
-            with open('df_measurement.csv','w') as f:
+            with open('src/df_measurement.csv','w') as f:
                 f.write(hdr + '\n')
-            self.inputManager.to_csv('df_measurement.csv', mode = 'a', na_rep = ' ') #append (hdr)
+            self.inputManager.to_csv('src/df_measurement.csv', mode = 'a', na_rep = ' ') #append (hdr)
         except:
             print ('Settings NOT saved. Please check df_template status.')
 
@@ -255,7 +278,7 @@ class mainWindow(QMainWindow):
         ''' write inputManager values to user input widgets.
                 input widget values saved on close to inputManager csv'''
         try:
-            self.inputManager = pd.DataFrame.from_csv('df_measurement.csv', header = 1)
+            self.inputManager = pd.DataFrame.from_csv('src/df_measurement.csv', header = 1)
             for w in self.inputWidgets:
                 field = w.accessibleName()
                 if not (str(field) == 'exp_name' or str(field) == 'sample'):
@@ -273,6 +296,14 @@ class mainWindow(QMainWindow):
             Utilities.save_to_file(self.inputManager, dat[0], dat[1])
         else:
             print ('### Data has not been saved. ###')
+            
+    @pyqtSlot(object)
+    def saveDepositionData(self, dat):
+        '''Save final data array'''
+        if self.mainWindow.checkBoxSave.isChecked():
+            Utilities.deposition_save_to_file(self.inputManager, dat[0], dat[1], dat[2], dat[3], dat[4], dat[5], dat[6], dat[7], dat[8])
+        else:
+            print ('### Data has not been saved. ###')    
 
             
     @pyqtSlot()
@@ -283,18 +314,38 @@ class mainWindow(QMainWindow):
             current = self.mainWindow.lineEditSave.text()
             self.mainWindow.lineEditSave.setText(QFileDialog(directory = current).getExistingDirectory()+'/')
         except Exception:
-            self.mainWindow.lineEditSave.setText(QFileDialog().getExistingDirectory()+'/')        
-        
+            self.mainWindow.lineEditSave.setText(QFileDialog().getExistingDirectory()+'/')
+            
+            
         
     @pyqtSlot(object)    
     def plotPoint(self, datPoint):
-        '''Update GUI graph with new measurement point'''
+        '''Update GUI graph with new IV measurement point'''
         self.fixedVfig.plot(datPoint[0],datPoint[2])
         self.fixedVfig.figure.suptitle('Fixed Voltage Measurements')
         self.fixedVfig.axes.set_xlabel('Sample')
         self.fixedVfig.axes.set_ylabel('I (A)')
         self.mainWindow.pltWidget.figure.tight_layout()
         self.mainWindow.pltWidget.draw()
+        
+    @pyqtSlot(object)    
+    def plotDepositionPoint(self, datPoint):
+        '''Update GUI graph with new deposition measurement point'''
+        if (self.mainWindow.comboBoxQCM_Display.currentText() == 'Thickness'):
+            self.depositionfig.plot(datPoint[0],datPoint[1], 'rs', datPoint[0],datPoint[3], 'bs', datPoint[0],datPoint[5], 'gs', datPoint[0],datPoint[7], 'ys',)
+            self.depositionfig.figure.suptitle('Thickness Monitor')
+            self.depositionfig.axes.set_xlabel('Time (s)')
+            self.depositionfig.axes.set_ylabel('Thickness (Angstroms)')
+            self.mainWindow.pltWidget_2.figure.tight_layout()
+            self.mainWindow.pltWidget_2.draw()
+        if (self.mainWindow.comboBoxQCM_Display.currentText() == 'Rates'):
+            self.depositionfig.plot(datPoint[0],datPoint[2], 'r--', datPoint[0],datPoint[4], 'b--', datPoint[0],datPoint[6], 'g--', datPoint[0],datPoint[8], 'y--',)
+            self.depositionfig.figure.suptitle('Rate Monitor')
+            self.depositionfig.axes.set_xlabel('Time (s)')
+            self.depositionfig.axes.set_ylabel('Rate (Angstroms/sec)')
+            self.mainWindow.pltWidget_2.figure.tight_layout()
+            self.mainWindow.pltWidget_2.draw()        
+        
         
         
     @pyqtSlot(object)    
@@ -310,15 +361,19 @@ class mainWindow(QMainWindow):
 
     def setUpPlot(self):
         '''Create matplotlib in main window'''
+        # Conductivity plot
         embeddedGraph = self.mainWindow.pltWidget
-        
         self.fixedVfig = embeddedGraph.figure.add_subplot(111)
         self.IVfig = self.mainWindow.pltWidget.figure.add_subplot(111)
-        
         embeddedGraph.figure.tight_layout()
         self.mainWindow.toolbar = NavigationToolbar(embeddedGraph,self)
         self.mainWindow.plotLayout.addWidget(self.mainWindow.toolbar)
-        
+        # Deposition Plot
+        embeddedGraph2 = self.mainWindow.pltWidget_2
+        self.depositionfig = embeddedGraph2.figure.add_subplot(111)
+        embeddedGraph2.figure.tight_layout()
+        self.mainWindow.toolbar2 = NavigationToolbar(embeddedGraph2,self)
+        self.mainWindow.plotLayout_2.addWidget(self.mainWindow.toolbar2)        
         
         
 class EmittingStream(QObject):

@@ -31,11 +31,18 @@ class k2400():
 				inst.baud_rate = baudR
 				return inst
 			except:
-				print('### Problem connecting to Keithely ###')
+				print('### Problem connecting to Keithely using Serial ###')
 	
 			
-	
-			#ross add other options here
+
+		if str(connectionPars['connectionType']) == 'GPIB':
+			try:
+				address = 'GPIB%s::%s::INSTR'%(connectionPars['gpibPrefix'], connectionPars['gpibAd'])
+				inst = rm.open_resource(address)
+			except:
+				print('### Problem connecting to Keithely using GPIB ###')
+		
+		
 		else:	
 			raise Exception('connection type %s not suported for SMU'%connectionPars.value['connectionType'])
 	

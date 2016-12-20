@@ -29,3 +29,9 @@ takeIVsweep,NA,NA,Parameters,*parameters
 fixedV,V, V,Fixed_Voltage,parameters
 nRepeats,,NA,Number of Samples,parameters
 pauseTime,s, s,Time_between_fixed_voltage_measurements,parameters
+QCM1,NA,NA,Parameters,*parameters
+QCM2,NA,NA,Parameters,*parameters
+QCM3,NA,NA,Parameters,*parameters
+QCM4,NA,NA,Parameters,*parameters
+QCM_display,NA,NA,Parameters,*parameters
+QCM_sampleTime,s,s,Parameters,*parameters
