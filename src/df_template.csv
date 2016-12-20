@@ -35,3 +35,6 @@ QCM3,NA,NA,Parameters,*parameters
 QCM4,NA,NA,Parameters,*parameters
 QCM_display,NA,NA,Parameters,*parameters
 QCM_sampleTime,s,s,Parameters,*parameters
+OFET_width,NA,NA,Parameters,*parameters
+OFET_no,NA,NA,Parameters,*parameters
+OFET_thickness,NA,NA,Parameters,*parameters

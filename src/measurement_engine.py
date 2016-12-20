@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Methods and classes used for conductivity measurements. Run in separate thread from GUI.
+Methods and classes used for IV measurements. Run in separate thread from GUI.
 '''
 
 import time
@@ -11,7 +11,58 @@ import numpy as np
 
 from src.k2400_control import * # conductivity engine controls keithley
 
+class Conductivity_Engine():
+    '''Routine for fixed-voltage measurements and IV sweep'''
+    def __init__(self, parent=None):
+        pass
+
+    def connect2Keith(self):
+        smu, rm = k2400.connect_SMU(self.user_parameters)
+        return smu, rm	
+
+    def measure(self, smu):
+        
+        width = self.user_parameters.value['OFET_width']
+        number = self.user_parameters.value['OFET_no']
+        name = str('OFET'+'_'+width+'_'+number)
+        self.ConductivityConsole.emit('Measuring: '+name)
+        
+        # IV Sweep for Ohmic injection check
+        self.KeithleyConsole.emit('Commencing IV Sweep...')
+        v = []
+        i = []
+        if self._flag: 
+            self.signalStatus.emit('Stopped.')
+            self.KeithleyConsole.emit('Measurement aborted')
+            return v, i
+        v, i = smu.measIVsweep(self.user_parameters.value)
+        data = v, i
+        
+        self.KeithleyConsole.emit('Voltage [V]', '\t', 'Current [A]')
+        for n in range(len(v)):
+            self.KeithleyConsole.emit(data[0][n], '\t', '%.4g' %data[1][n])
+        
+        self.newIVData.emit(data) # for graph update
+        self.endData.emit(data)
+        
+        # Conductivity Measurement
+        self.ConductivityConsole.emit('Sample', '\t', 'Current [A]', '\t', 'Conductivity [S/cm]')
+        sample = []
+        current = []
+        voltage =[]
+        conductivity = []
+        for n in range(4):
+            vv, ii = smu.measConductivity(self.user_parameters.value) 
+            current.append(float(ii))
+            voltage.append(float(vv))
+            sample.append(int(n))
+            # conductivity calculation
+            oo = (ii/vv)*((width*10^-9)/()
+        return   
+        
+
 class IV_Engine():
+    
     '''Routine for fixed-voltage measurements and IV sweep'''
     def __init__(self, parent=None):
         #self._flag1 = False

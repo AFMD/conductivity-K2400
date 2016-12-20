@@ -1,15 +1,15 @@
  --- Insitu ECHO meas template for data-frame used to store inputs and write file header - change at your own risk---,,,,
 key,value,units,fmf_name,fmf_category
-exp_name,test, ,Experiment,*reference
-sample,test, ,Sample,*reference
+exp_name,, ,Experiment,*reference
+sample,, ,Sample,*reference
 user,warrenr, ,User,*reference
-date,2016-11-25 11:00:24.224930, ,Date,*reference
+date,2016-12-20 15:26:11.073944, ,Date,*reference
 setup,DepositionMonitoring, ,Experimental_setup,setup
 vers,1, ,Software_version,setup
 loc,"AFMD lab, ECHO", ,Location,setup
 x_descript,Time,s,X_column,*data definitions
 y_descript,"QCM1 thickness, QCM1 rate, QCM2 thickness, QCM2 rate, etc.",,Y_column,*data definitions
-sav_loc,/home/warrenr/Desktop/, , , 
+sav_loc,, , , 
 rec_len, , , , 
 initialV, , V,Initial_V,parameters
 finalV, , V,Final_V,parameters
@@ -31,7 +31,10 @@ nRepeats, , ,Number of Samples,parameters
 pauseTime, , s,Time_between_fixed_voltage_measurements,parameters
 QCM1,True, ,Parameters,*parameters
 QCM2,True, ,Parameters,*parameters
-QCM3,True, ,Parameters,*parameters
-QCM4,True, ,Parameters,*parameters
+QCM3,False, ,Parameters,*parameters
+QCM4,False, ,Parameters,*parameters
 QCM_display,Thickness, ,Parameters,*parameters
 QCM_sampleTime,1.0,s,Parameters,*parameters
+OFET_width,2.5, ,Parameters,*parameters
+OFET_no,2, ,Parameters,*parameters
+OFET_thickness,30, ,Parameters,*parameters

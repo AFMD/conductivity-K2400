@@ -39,47 +39,54 @@ class programSetup(QObject):
         self.gui = mainWindow()
         
         # Setup the worker object and the worker_thread.
-        self.worker1 = keithleyWorker() 
+        self.worker1 = IVWorker() 
         self.worker_thread1 = QThread()
-        
         self.worker2 = inficonWorker() 
-        self.worker_thread2 = QThread()        
+        self.worker_thread2 = QThread() 
+        self.worker3 = ConductivityWorker() 
+        self.worker_thread3 = QThread()     
         
         # Move worker object to worker thread and start worker_thread.
         self.worker1.moveToThread(self.worker_thread1)
         self.worker_thread1.start()
-        
         self.worker2.moveToThread(self.worker_thread2)
-        self.worker_thread2.start()        
+        self.worker_thread2.start()
+        self.worker3.moveToThread(self.worker_thread3)
+        self.worker_thread3.start()           
         
         # Make any cross object connections.
         self._connectSignals()
-        
         self.gui.show()
         
     def _connectSignals(self): 
         # Keithley connections
-        self.gui.mainWindow.button_1.clicked.connect(self.gui.getInputs) # get inputs before running work
-        self.gui.mainWindow.button_1.clicked.connect(self.worker1.startWork) # run worker
-        self.gui.mainWindow.button_cancel1.clicked.connect(self.forceWorkerReset1)
+        #self.gui.mainWindow.button_1.clicked.connect(self.gui.getInputs) 
+        #self.gui.mainWindow.button_1.clicked.connect(self.worker1.startWork) 
+        #self.gui.mainWindow.button_cancel1.clicked.connect(self.forceWorkerReset1)
         self.gui.mainWindow.pushButtonSave.clicked.connect(self.gui.selectFile)
-        self.gui.mainWindow.pushButton_save.clicked.connect(self.gui.getInputs) # Save settings        
-        self.gui.mainWindow.pushButton_load.clicked.connect(self.gui.restoreState) # Restore settings
+        self.gui.mainWindow.pushButton_save.clicked.connect(self.gui.getInputs)        
+        self.gui.mainWindow.pushButton_load.clicked.connect(self.gui.restoreState) 
         self.worker1.endData.connect(self.gui.saveData)
         self.worker1.newfixedVDataPoint.connect(self.gui.plotPoint)
         self.worker1.newIVData.connect(self.gui.plotIV)           
         self.signalStatus.connect(self.gui.updateStatus)
         # Inficon connections
-        self.gui.mainWindow.pushButton_QCMStart.clicked.connect(self.gui.getInputs) # get inputs before running work
+        self.gui.mainWindow.pushButton_QCMStart.clicked.connect(self.gui.getInputs) 
         self.gui.mainWindow.pushButton_QCMStart.clicked.connect(self.worker2.startWork)
         self.gui.mainWindow.pushButton_QCMStop.clicked.connect(self.forceWorkerReset2)
         self.worker2.endDepositionData.connect(self.gui.saveDepositionData)
         self.worker2.newDepositionDataPoint.connect(self.gui.plotDepositionPoint)
+        # Transistor Conductivity Connections
+        self.gui.mainWindow.pushButton_cond_start.clicked.connect(self.gui.getInputs)
+        self.gui.mainWindow.pushButton_cond_start.clicked.connect(self.worker3.startWork)
+        self.gui.mainWindow.pushButton_cond_stop.clicked.connect(self.forceWorkerReset3)
         #General GUI connections
         self.worker1.signalStatus.connect(self.gui.updateStatus)
         self.worker2.signalStatus.connect(self.gui.updateStatus)
+        self.worker3.signalStatus.connect(self.gui.updateStatus)
         self.worker2.InficonConsole.connect(self.gui.writeInficonConsole)
         self.worker1.KeithleyConsole.connect(self.gui.writeKeithleyConsole)
+        self.worker3.ConductivityConsole.connect(self.gui.writeConductivityConsole)
         self.parent().aboutToQuit.connect(self.forceQuit)
         
 
@@ -89,11 +96,14 @@ class programSetup(QObject):
         if self.worker_thread1.isRunning():
             self.worker1.stopWork()
             self.signalStatus.emit('Keithley thread: Idle')
-            
     def forceWorkerReset2(self):
         if self.worker_thread2.isRunning():
             self.worker2.stopWork()
             self.signalStatus.emit('Inficon thread: Idle')
+    def forceWorkerReset3(self):
+        if self.worker_thread3.isRunning():
+            self.worker3.stopWork()
+            self.signalStatus.emit('Conductivity thread: Idle')            
             
             
     def forceQuit(self):
@@ -107,10 +117,14 @@ class programSetup(QObject):
             self.worker2.stopWork()
             #time.sleep(0.3) 
             self.worker_thread2.exit()
+        if self.worker_thread3.isRunning():
+            self.worker3.stopWork()
+            #time.sleep(0.3) 
+            self.worker_thread3.exit()        
             
             
             
-class keithleyWorker(QObject):
+class IVWorker(QObject):
     '''IV data aquisition worker'''
     
     KeithleyConsole = pyqtSignal(str)
@@ -142,6 +156,33 @@ class keithleyWorker(QObject):
     def stopWork(self):
         self._flag = True
         
+        
+class ConductivityWorker(QObject):
+    '''Conductivity aquisition worker'''
+    
+    ConductivityConsole = pyqtSignal(str)
+    KeithleyConsole = pyqtSignal(str)
+    signalStatus = pyqtSignal(str)
+    endData = pyqtSignal(object)
+    askParameters = pyqtSignal(object)   
+    newIVData = pyqtSignal(object)
+    
+    def __init__(self, parent=None):
+        super(self.__class__, self).__init__(parent)
+        
+    @pyqtSlot()        
+    def startWork(self):
+        
+        self._flag = False
+        self.signalStatus.emit('Conductivity thread running')
+        self.user_parameters = pd.DataFrame.from_csv('src/df_measurement.csv', header=1) # Get input parameters from df_measurement
+        smu, rm = Conductivity_Engine.connect2Keith(self)
+        Conductivity_Engine.measure(self, smu)
+        self.signalStatus.emit('Completed')
+    
+    @pyqtSlot()
+    def stopWork(self):
+        self._flag = True
         
 class inficonWorker(QObject):
     
@@ -178,6 +219,8 @@ class mainWindow(QMainWindow):
         super(mainWindow, self).__init__(parent)
         self.mainWindow = Ui_MainWindow()
         self.mainWindow.setupUi(self)
+        #self.mainWindow.OFET_label.setPixmap(QtGui.QPixmap(_fromUtf8("OFET_layout.jpg")))
+        self.mainWindow.OFET_label.setPixmap(QtGui.QPixmap("src/OFET_layout.jpg"))
         #sys.stdout = EmittingStream(textWritten=self.write) #redirect console print to UI
         
         ### Widget and fmf definitions ###
@@ -205,6 +248,15 @@ class mainWindow(QMainWindow):
         self.mainWindow.plainTextEdit_2.ensureCursorVisible()
         self.mainWindow.plainTextEdit_2.insertPlainText(s) 
         self.mainWindow.plainTextEdit_2.insertPlainText('\n')
+        
+    @pyqtSlot(str)
+    def writeConductivityConsole(self, s):
+        '''write text to Inficon text slot in UI'''
+        self.mainWindow.plainTextEdit_3.moveCursor(QTextCursor.End)
+        self.mainWindow.plainTextEdit_3.ensureCursorVisible()
+        self.mainWindow.plainTextEdit_3.insertPlainText(s) 
+        self.mainWindow.plainTextEdit_3.insertPlainText('\n')
+        
         
     @pyqtSlot(object)
     def getInputs(self):
@@ -253,9 +305,59 @@ class mainWindow(QMainWindow):
             self.inputManager.loc['x_descript'].value = str('Time')  
             self.inputManager.loc['x_descript'].units = str('s')
             self.inputManager.loc['y_descript'].value = str('QCM1 thickness, QCM1 rate, QCM2 thickness, QCM2 rate, etc.')                
-            self.inputManager.loc['y_descript'].units = str('')           
+            self.inputManager.loc['y_descript'].units = str('') 
             
-            
+        # For transistor picture  
+        if self.mainWindow.OFET_20_1.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(20)
+            self.inputManager.loc['OFET_no'].value = int(1)
+        if self.mainWindow.OFET_20_2.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(20)
+            self.inputManager.loc['OFET_no'].value = int(2)
+        if self.mainWindow.OFET_20_3.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(20)
+            self.inputManager.loc['OFET_no'].value = int(3)  
+        if self.mainWindow.OFET_20_4.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(20)
+            self.inputManager.loc['OFET_no'].value = int(4)
+        if self.mainWindow.OFET_10_1.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(10)
+            self.inputManager.loc['OFET_no'].value = int(1)
+        if self.mainWindow.OFET_10_2.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(10)
+            self.inputManager.loc['OFET_no'].value = int(2)
+        if self.mainWindow.OFET_10_3.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(10)
+            self.inputManager.loc['OFET_no'].value = int(3)  
+        if self.mainWindow.OFET_10_4.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(10)
+            self.inputManager.loc['OFET_no'].value = int(4)      
+        if self.mainWindow.OFET_5_1.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(5)
+            self.inputManager.loc['OFET_no'].value = int(1)
+        if self.mainWindow.OFET_5_2.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(5)
+            self.inputManager.loc['OFET_no'].value = int(2)
+        if self.mainWindow.OFET_5_3.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(5)
+            self.inputManager.loc['OFET_no'].value = int(3)  
+        if self.mainWindow.OFET_5_4.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = int(5)
+            self.inputManager.loc['OFET_no'].value = int(4)         
+        if self.mainWindow.OFET_2p5_1.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = float(2.5)
+            self.inputManager.loc['OFET_no'].value = int(1)
+        if self.mainWindow.OFET_2p5_2.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = float(2.5)
+            self.inputManager.loc['OFET_no'].value = int(2)
+        if self.mainWindow.OFET_2p5_3.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = float(2.5)
+            self.inputManager.loc['OFET_no'].value = int(3)  
+        if self.mainWindow.OFET_2p5_4.isChecked() == True:
+            self.inputManager.loc['OFET_width'].value = float(2.5)
+            self.inputManager.loc['OFET_no'].value = int(4)             
+        
+        
         if self.inputManager.loc['exp_name'].value == None:
             pass # what to do if user forgets to put in exp name/sample???
             

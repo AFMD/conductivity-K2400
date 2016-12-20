@@ -9,6 +9,7 @@ https://github.com/AFMD/transients
 import visa
 import sys
 import numpy as np
+import time
 
 defaultstdout = sys.stdout #save default console print location
 
@@ -128,3 +129,36 @@ class k2400():
 		self.write('OUTP OFF')
 		
 		return v_data,i_data 	
+
+	def measConductivity(self, pars):
+		'''Prepare for conductivity measurement'''		
+		self.write(':SYST:BEEP:STAT OFF') #TURN OFF annoying beeb
+		self.write("ROUTe:TERM %s"%pars['route']) #select front/rear channel
+		self.write("SYST:RSEN %s"%pars['4wire']) #4 wire measurement or two wire?
+		
+		self.write(':TRIG:COUN 1')	#set to output 1 pulse
+		self.write(':SOUR:FUNC VOLT')	#SELECT SOURCE
+		self.write(':SENS:FUNC:CONC OFF') #do not measure both V and I concurrently
+		self.write(':SOUR:VOLT:MODE FIXED') #fixed voltage source mode
+		self.write(':SOUR:VOLT:RANG:AUTO ON') #auto range for voltage
+		
+		self.write(':SOUR:VOLT:LEV -1') # -1V for 20 seconds
+		self.write(':OUTP ON')
+		time.sleep(20)
+		self.write(':OUTP OFF')
+		
+		self.write(':SOUR:VOLT:LEV %s'%pars['fixedV']) #choose voltage for measurement
+		self.write(':SENS:CURR:PROT 1E%s'%pars['compliance']) # Sets compliance for measurement
+		self.write(':SENS:NPLC %s'%pars['integrationTime']) # Sets integration time for measurement
+		self.write(':SENS:FUNC "CURR"') #Choose current measurement function
+		self.write(':SENS:CURR:RANG:AUTO ON') #Autorange for current measuremnet
+		self.write(':FORM:ELEM VOLT,CURR') #voltage and current reading
+	
+		self.write(':OUTP ON')
+		time.sleep(10) #Sleep 10 seconds with output on.
+		v, i =[float(x) for x in self.query('READ?').split(',')] #break data str into values
+		self.write('OUTP OFF')
+	
+		return v, i			
+		
+	
