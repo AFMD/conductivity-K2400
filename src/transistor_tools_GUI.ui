@@ -166,7 +166,7 @@
                   <string> V</string>
                  </property>
                  <property name="decimals">
-                  <number>1</number>
+                  <number>3</number>
                  </property>
                  <property name="maximum">
                   <double>100.000000000000000</double>
@@ -295,6 +295,9 @@
                  <property name="accessibleName">
                   <string>stepSize</string>
                  </property>
+                 <property name="decimals">
+                  <number>3</number>
+                 </property>
                  <property name="minimum">
                   <double>0.000000000000000</double>
                  </property>
@@ -318,7 +321,7 @@
                   <string> V</string>
                  </property>
                  <property name="decimals">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="minimum">
                   <double>-50.000000000000000</double>
@@ -354,7 +357,7 @@
                   <string> V</string>
                  </property>
                  <property name="decimals">
-                  <number>1</number>
+                  <number>2</number>
                  </property>
                  <property name="minimum">
                   <double>-50.000000000000000</double>

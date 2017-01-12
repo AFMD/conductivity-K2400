@@ -64,7 +64,7 @@ class Conductivity_Engine():
             if self._flag: 
                 self.signalStatus.emit('Stopped.')
                 self.ConductivityConsole.emit('Measurement aborted')            
-            vv, ii = smu.measConductivity(self.user_parameters.value) 
+            vv, ii = smu.measConductivity(self.user_parameters.value) # the actual measurement - default 20 secs
             current.append(float(ii))
             voltage.append(float(vv))
             sample.append(int(n))

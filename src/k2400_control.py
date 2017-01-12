@@ -144,7 +144,8 @@ class k2400():
 		
 		self.write(':SOUR:VOLT:LEV -%s'%pars['fixedV']) # -(measurement voltage)V for 20 seconds
 		self.write(':OUTP ON')
-		time.sleep(int(pars['pauseTime']))
+		time_2_sleep = int(pars['pauseTime'])
+		time.sleep(time_2_sleep)
 		self.write(':OUTP OFF')
 		
 		self.write(':SOUR:VOLT:LEV %s'%pars['fixedV']) #choose voltage for measurement
@@ -155,7 +156,7 @@ class k2400():
 		self.write(':FORM:ELEM VOLT,CURR') #voltage and current reading
 	
 		self.write(':OUTP ON')
-		time.sleep(int(pars['pauseTime'])) #Sleep 10 seconds with output on.
+		time.sleep(time_2_sleep) #Sleep 10 seconds with output on.
 		v, i =[float(x) for x in self.query('READ?').split(',')] #break data str into values
 		self.write('OUTP OFF')
 	
