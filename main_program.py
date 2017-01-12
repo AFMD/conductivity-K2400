@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__version__ = '1'
+__version__ = '2'
 
 '''
 Transistor tools. This creates and controls the threads and GUI.
@@ -371,6 +371,7 @@ class mainWindow(QMainWindow):
             self.inputManager.loc['OFET_width'].value = float(2.5)
             self.inputManager.loc['OFET_no'].value = int(4)             
         
+        #self.inputManager.loc['OFET_chip'].value = 'OFET_'+str(self.inputManager.value['OFET_width'])+'_'+str(self.inputManager.value['OFET_no'])
         
         if self.inputManager.loc['exp_name'].value == None:
             pass # what to do if user forgets to put in exp name/sample???

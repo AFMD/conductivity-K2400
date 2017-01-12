@@ -3,16 +3,16 @@ key,value,units,fmf_name,fmf_category
 exp_name,test, ,Experiment,*reference
 sample,test, ,Sample,*reference
 user,warrenr, ,User,*reference
-date,2017-01-12 13:28:02.097179, ,Date,*reference
+date,2017-01-12 14:54:28.079494, ,Date,*reference
 setup,Conductivity, ,Experimental_setup,setup
-vers,1, ,Software_version,setup
+vers,2, ,Software_version,setup
 loc,"AFMD lab, ECHO", ,Location,setup
 x_descript,V,/V,X_column,*data definitions
 y_descript,I,/A,Y_column,*data definitions
 sav_loc,/home/warrenr/Desktop/test/, , , 
 rec_len, , , , 
-initialV,-2.0, V,Initial_V,parameters
-finalV,2.0, V,Final_V,parameters
+initialV,-10.0, V,Initial_V,parameters
+finalV,10.0, V,Final_V,parameters
 stepSize,0.5, V,V_step,parameters
 holdTime,0.1, s,Hold_time,parameters
 baudR,57600,baudRate,setup,*setup
@@ -27,7 +27,7 @@ serAd,0, ,setup,*setup
 takefixedV,True, ,Parameters,*parameters
 takeIVsweep,True, ,Parameters,*parameters
 fixedV,1.0, V,Fixed_Voltage,parameters
-nRepeats,3, ,Number of Samples,parameters
+nRepeats,4, ,Number of Samples,parameters
 pauseTime,20.0, s,Time_between_fixed_voltage_measurements,parameters
 QCM1,True, ,Parameters,*parameters
 QCM2,True, ,Parameters,*parameters
@@ -35,6 +35,6 @@ QCM3,False, ,Parameters,*parameters
 QCM4,False, ,Parameters,*parameters
 QCM_display,Thickness, ,Parameters,*parameters
 QCM_sampleTime,1.0,s,Parameters,*parameters
-OFET_width,2.5, ,Parameters,*parameters
-OFET_no,3, ,Parameters,*parameters
-OFET_thickness,30, ,Parameters,*parameters
+OFET_width,20, ,Parameters,parameters
+OFET_no,1, ,Parameters,parameters
+OFET_thickness,30, ,Parameters,parameters

@@ -23,6 +23,7 @@ class Conductivity_Engine():
     def measure(self, smu):
         
         width = self.user_parameters.value['OFET_width']
+        thickness = self.user_parameters.value['OFET_thickness']
         number = self.user_parameters.value['OFET_no']
         name = str('OFET'+'_'+width+'_'+number)
         self.ConductivityConsole.emit('Measuring: '+name)
@@ -35,6 +36,7 @@ class Conductivity_Engine():
         if self._flag: 
             self.signalStatus.emit('Stopped.')
             self.IVConsole.emit('Measurement aborted')
+            return
 
         v, i = smu.measIVsweep(self.user_parameters.value)
         data = v, i
@@ -49,7 +51,8 @@ class Conductivity_Engine():
         
         if self._flag: 
             self.signalStatus.emit('Stopped.')
-            self.IVConsole.emit('Measurement aborted')        
+            self.IVConsole.emit('Measurement aborted')
+            return
         
         # Conductivity Measurement
         self.ConductivityConsole.emit('Sample \t Current [A] \t Conductivity [S/cm]')
@@ -66,13 +69,14 @@ class Conductivity_Engine():
             voltage.append(float(vv))
             sample.append(int(n))
             # conductivity calculation
-            oo = (ii/vv)*((float(width)*(1e-6))/(0.5e-3*30e-9)) # finger length * finger depth
+            oo = (ii/vv)*((float(width)*(1e-6))/(0.5e-3*(float(thickness)*1e-9))) # finger length * film thickness!!
             conductivity.append(float(oo))
             self.ConductivityConsole.emit('%s \t %.4g \t %.2e' % ((n+1), ii, oo*1e-2))
             self.progressBar.emit(20+(n+1)*(80/(int(self.user_parameters.value['nRepeats']))))
             if self._flag: 
                 self.signalStatus.emit('Stopped.')
                 self.ConductivityConsole.emit('Measurement aborted')
+                return
          
         data2 = sample, voltage, current, conductivity    
         self.endCondData.emit(data2)

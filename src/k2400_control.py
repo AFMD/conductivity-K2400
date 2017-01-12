@@ -142,7 +142,7 @@ class k2400():
 		self.write(':SOUR:VOLT:MODE FIXED') #fixed voltage source mode
 		self.write(':SOUR:VOLT:RANG:AUTO ON') #auto range for voltage
 		
-		self.write(':SOUR:VOLT:LEV -1') # -1V for 20 seconds
+		self.write(':SOUR:VOLT:LEV -%s'%pars['fixedV']) # -(measurement voltage)V for 20 seconds
 		self.write(':OUTP ON')
 		time.sleep(20)
 		self.write(':OUTP OFF')
