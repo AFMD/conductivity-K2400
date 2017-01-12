@@ -125,6 +125,31 @@ def deposition_save_to_file(inptMgerDf, sampletime, QCM1_thickness, QCM1_rate, Q
 		
 	except:
 		print ('Data has not be saved remotely.')
+		
+		
+def conductivity_save_to_file(inptMgerDf, sample, voltage, current, conductivity):
+	''' Actually do the saving thing'''
+
+	hdr = pandas_2fmfHeader(inptMgerDf)
+	data = np.column_stack((sample, voltage, current, conductivity))
+	data = data.astype(float)
+	format = ['%.6g']*data.shape[1]
+
+	#save to user location
+	f = generate_file_name(inptMgerDf)
+	np.savetxt(f,data, delimiter = '\t', fmt = format, header = hdr, comments = '')
+	print ('Data has been saved locally: ', f)
+	
+	#save to group drive
+	try: 
+		y_address= '\\dc3.physics.ox.ac.uk\dfs\DAQ\CondensedMatterGroups\MRGroup\Transistor_data\\'
+		y_address+= inptMgerDf.loc['exp_name'].value + '\\' + inptMgerDf.loc['user'].value + '\\'
+		f = generate_file_name(inptMgerDf, y_address)
+		np.savetxt(f, data, delimiter = '\t', fmt = format, header = hdr, comments = '')
+		print ('Data has been saved remotely: ', f)
+		
+	except:
+		print ('Data has not be saved remotely.')
 
 
 def getWidgetValue(w):

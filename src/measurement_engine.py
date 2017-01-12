@@ -28,39 +28,56 @@ class Conductivity_Engine():
         self.ConductivityConsole.emit('Measuring: '+name)
         
         # IV Sweep for Ohmic injection check
-        self.KeithleyConsole.emit('Commencing IV Sweep...')
+        self.IVConsole.emit('Commencing IV Sweep...')
         v = []
         i = []
+        
         if self._flag: 
             self.signalStatus.emit('Stopped.')
-            self.KeithleyConsole.emit('Measurement aborted')
-            return v, i
+            self.IVConsole.emit('Measurement aborted')
+
         v, i = smu.measIVsweep(self.user_parameters.value)
         data = v, i
-        
-        self.KeithleyConsole.emit('Voltage [V]', '\t', 'Current [A]')
+             
+        self.IVConsole.emit('Voltage [V] \t Current [A]')
         for n in range(len(v)):
-            self.KeithleyConsole.emit(data[0][n], '\t', '%.4g' %data[1][n])
+            self.IVConsole.emit('%.2g \t %.4g' % (data[0][n] ,data[1][n]))
         
         self.newIVData.emit(data) # for graph update
-        self.endData.emit(data)
+        self.endIVData.emit(data)
+        self.progressBar.emit(20)
+        
+        if self._flag: 
+            self.signalStatus.emit('Stopped.')
+            self.IVConsole.emit('Measurement aborted')        
         
         # Conductivity Measurement
-        self.ConductivityConsole.emit('Sample', '\t', 'Current [A]', '\t', 'Conductivity [S/cm]')
+        self.ConductivityConsole.emit('Sample \t Current [A] \t Conductivity [S/cm]')
         sample = []
         current = []
         voltage =[]
         conductivity = []
-        for n in range(4):
+        for n in range((int(self.user_parameters.value['nRepeats']))):
+            if self._flag: 
+                self.signalStatus.emit('Stopped.')
+                self.ConductivityConsole.emit('Measurement aborted')            
             vv, ii = smu.measConductivity(self.user_parameters.value) 
             current.append(float(ii))
             voltage.append(float(vv))
             sample.append(int(n))
             # conductivity calculation
-            oo = (ii/vv)*((width*10^-9)/()
-        return   
+            oo = (ii/vv)*((float(width)*(1e-6))/(0.5e-3*30e-9)) # finger length * finger depth
+            conductivity.append(float(oo))
+            self.ConductivityConsole.emit('%s \t %.4g \t %.2e' % ((n+1), ii, oo*1e-2))
+            self.progressBar.emit(20+(n+1)*(80/(int(self.user_parameters.value['nRepeats']))))
+            if self._flag: 
+                self.signalStatus.emit('Stopped.')
+                self.ConductivityConsole.emit('Measurement aborted')
+         
+        data2 = sample, voltage, current, conductivity    
+        self.endCondData.emit(data2)
+        return
         
-
 class IV_Engine():
     
     '''Routine for fixed-voltage measurements and IV sweep'''

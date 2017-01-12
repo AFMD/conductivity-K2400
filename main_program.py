@@ -66,7 +66,7 @@ class programSetup(QObject):
         self.gui.mainWindow.pushButtonSave.clicked.connect(self.gui.selectFile)
         self.gui.mainWindow.pushButton_save.clicked.connect(self.gui.getInputs)        
         self.gui.mainWindow.pushButton_load.clicked.connect(self.gui.restoreState) 
-        self.worker1.endData.connect(self.gui.saveData)
+        self.worker1.endData.connect(self.gui.saveIVData)
         self.worker1.newfixedVDataPoint.connect(self.gui.plotPoint)
         self.worker1.newIVData.connect(self.gui.plotIV)           
         self.signalStatus.connect(self.gui.updateStatus)
@@ -80,12 +80,18 @@ class programSetup(QObject):
         self.gui.mainWindow.pushButton_cond_start.clicked.connect(self.gui.getInputs)
         self.gui.mainWindow.pushButton_cond_start.clicked.connect(self.worker3.startWork)
         self.gui.mainWindow.pushButton_cond_stop.clicked.connect(self.forceWorkerReset3)
+        self.worker3.newIVData.connect(self.gui.plotIV)
+        self.worker3.endIVData.connect(self.gui.saveIVData)
+        self.worker3.endCondData.connect(self.gui.saveCondData)
+        
+        
         #General GUI connections
-        self.worker1.signalStatus.connect(self.gui.updateStatus)
+        #self.worker1.signalStatus.connect(self.gui.updateStatus)
         self.worker2.signalStatus.connect(self.gui.updateStatus)
         self.worker3.signalStatus.connect(self.gui.updateStatus)
+        self.worker3.progressBar.connect(self.gui.updateProgress)
         self.worker2.InficonConsole.connect(self.gui.writeInficonConsole)
-        self.worker1.KeithleyConsole.connect(self.gui.writeKeithleyConsole)
+        self.worker3.IVConsole.connect(self.gui.writeIVConsole)
         self.worker3.ConductivityConsole.connect(self.gui.writeConductivityConsole)
         self.parent().aboutToQuit.connect(self.forceQuit)
         
@@ -127,7 +133,7 @@ class programSetup(QObject):
 class IVWorker(QObject):
     '''IV data aquisition worker'''
     
-    KeithleyConsole = pyqtSignal(str)
+    IVConsole = pyqtSignal(str)
     signalStatus = pyqtSignal(str)
     endData = pyqtSignal(object)
     newfixedVDataPoint = pyqtSignal(object)
@@ -161,9 +167,11 @@ class ConductivityWorker(QObject):
     '''Conductivity aquisition worker'''
     
     ConductivityConsole = pyqtSignal(str)
-    KeithleyConsole = pyqtSignal(str)
+    IVConsole = pyqtSignal(str)
+    progressBar = pyqtSignal(float)
     signalStatus = pyqtSignal(str)
-    endData = pyqtSignal(object)
+    endIVData = pyqtSignal(object)
+    endCondData = pyqtSignal(object)
     askParameters = pyqtSignal(object)   
     newIVData = pyqtSignal(object)
     
@@ -175,6 +183,7 @@ class ConductivityWorker(QObject):
         
         self._flag = False
         self.signalStatus.emit('Conductivity thread running')
+        self.progressBar.emit(0)
         self.user_parameters = pd.DataFrame.from_csv('src/df_measurement.csv', header=1) # Get input parameters from df_measurement
         smu, rm = Conductivity_Engine.connect2Keith(self)
         Conductivity_Engine.measure(self, smu)
@@ -226,7 +235,8 @@ class mainWindow(QMainWindow):
         ### Widget and fmf definitions ###
         self.inputManager = pd.DataFrame.from_csv('src/df_template.csv', header=1) # object for metadata
         fields = list(self.inputManager.index) # create a list of the indices in the metadata file
-        self.inputWidgets = [w for w in self.findChildren(QWidget) if str(w.accessibleName()) in fields] # creates list of all QWidgets in GUI        
+        self.inputWidgets = [w for w in self.findChildren(QWidget) if str(w.accessibleName()) in fields] # creates list of all QWidgets in GUI
+        mainWindow.setUpPlot(self)
         
         
     @pyqtSlot(str)
@@ -234,7 +244,11 @@ class mainWindow(QMainWindow):
         self.mainWindow.statusBar.showMessage(status)
         
     @pyqtSlot(str)
-    def writeKeithleyConsole(self, s):
+    def updateProgress(self, value):
+        self.mainWindow.progressBar.setValue(value)
+        
+    @pyqtSlot(str)
+    def writeIVConsole(self, s):
         '''write text to text slot in UI'''
         self.mainWindow.plainTextEdit.moveCursor(QTextCursor.End)
         self.mainWindow.plainTextEdit.ensureCursorVisible()
@@ -275,7 +289,7 @@ class mainWindow(QMainWindow):
         self.inputManager.loc['vers'].value = __version__
         
         if self.mainWindow.checkBox_IV.isChecked() == True and self.mainWindow.checkBox_fixedV.isChecked() == True:
-            self.inputManager.loc['setup'].value = str('IVsweep_FixedV')
+            self.inputManager.loc['setup'].value = str('Conductivity')
         
         if self.mainWindow.checkBox_IV.isChecked() == True and self.mainWindow.checkBox_fixedV.isChecked() == False:
             self.inputManager.loc['setup'].value = str('IVsweep')
@@ -392,12 +406,22 @@ class mainWindow(QMainWindow):
         
         
     @pyqtSlot(object)
-    def saveData(self, dat):
+    def saveIVData(self, dat):
         '''Save final data array'''
         if self.mainWindow.checkBoxSave.isChecked():
+            self.inputManager.loc['setup'].value = str('IV_sweep')
             Utilities.save_to_file(self.inputManager, dat[0], dat[1])
         else:
             print ('### Data has not been saved. ###')
+            
+    @pyqtSlot(object)
+    def saveCondData(self, dat):
+        '''Save final data array'''
+        if self.mainWindow.checkBoxSave.isChecked():
+            self.inputManager.loc['setup'].value = str('Conductivity')
+            Utilities.conductivity_save_to_file(self.inputManager, dat[0], dat[1], dat[2], dat[3])
+        else:
+            print ('### Data has not been saved. ###')    
             
     @pyqtSlot(object)
     def saveDepositionData(self, dat):
@@ -453,6 +477,12 @@ class mainWindow(QMainWindow):
     @pyqtSlot(object)    
     def plotIV(self, datPoint):
         '''Update GUI graph with new measurement point'''
+        #embeddedGraph = self.mainWindow.pltWidget
+        #self.IVfig = self.mainWindow.pltWidget.figure.add_subplot(111)
+        #embeddedGraph.figure.tight_layout()
+        #self.mainWindow.toolbar = NavigationToolbar(embeddedGraph,self)
+        #self.mainWindow.plotLayout.addWidget(self.mainWindow.toolbar)
+        
         self.IVfig.plot(datPoint[0],datPoint[1])
         self.IVfig.figure.suptitle('IV plot')
         self.IVfig.axes.set_xlabel('Voltage [V]')
@@ -465,7 +495,7 @@ class mainWindow(QMainWindow):
         '''Create matplotlib in main window'''
         # Conductivity plot
         embeddedGraph = self.mainWindow.pltWidget
-        self.fixedVfig = embeddedGraph.figure.add_subplot(111)
+        #self.fixedVfig = embeddedGraph.figure.add_subplot(111)
         self.IVfig = self.mainWindow.pltWidget.figure.add_subplot(111)
         embeddedGraph.figure.tight_layout()
         self.mainWindow.toolbar = NavigationToolbar(embeddedGraph,self)
