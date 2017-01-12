@@ -43,7 +43,7 @@ class Conductivity_Engine():
              
         self.IVConsole.emit('Voltage [V] \t Current [A]')
         for n in range(len(v)):
-            self.IVConsole.emit('%.2g \t %.4g' % (data[0][n] ,data[1][n]))
+            self.IVConsole.emit('%.2f \t %.4g' % (data[0][n] ,data[1][n]))
         
         self.newIVData.emit(data) # for graph update
         self.endIVData.emit(data)
@@ -75,6 +75,8 @@ class Conductivity_Engine():
             self.progressBar.emit(20+(n+1)*(80/(int(self.user_parameters.value['nRepeats']))))
             if self._flag: 
                 self.signalStatus.emit('Stopped.')
+                data2 = sample, voltage, current, conductivity    
+                self.endCondData.emit(data2)                
                 self.ConductivityConsole.emit('Measurement aborted')
                 return
          
