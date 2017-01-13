@@ -2,6 +2,9 @@
 key,value,units,fmf_name,fmf_category
 exp_name,experiment,,Experiment,*reference
 sample,Sample,,Sample,*reference
+OFET_width,NA,NA,Channel_width,*reference
+OFET_no,NA,NA,OFET_number,*reference
+OFET_thickness,NA,NA,Film_thickness,*reference
 user,user,,User,*reference
 date,date,,Date,*reference
 setup,,,Experimental_setup,setup
@@ -35,6 +38,4 @@ QCM3,NA,NA,Parameters,*parameters
 QCM4,NA,NA,Parameters,*parameters
 QCM_display,NA,NA,Parameters,*parameters
 QCM_sampleTime,s,s,Parameters,*parameters
-OFET_width,NA,NA,Parameters,parameters
-OFET_no,NA,NA,Parameters,parameters
-OFET_thickness,NA,NA,Parameters,parameters
+

@@ -2,8 +2,11 @@
 key,value,units,fmf_name,fmf_category
 exp_name,test, ,Experiment,*reference
 sample,test, ,Sample,*reference
+OFET_width,20, ,Channel_width,*reference
+OFET_no,1, ,OFET_number,*reference
+OFET_thickness,31, ,Film_thickness,*reference
 user,warrenr, ,User,*reference
-date,2017-01-12 14:54:28.079494, ,Date,*reference
+date,2017-01-13 10:12:23.639434, ,Date,*reference
 setup,Conductivity, ,Experimental_setup,setup
 vers,2, ,Software_version,setup
 loc,"AFMD lab, ECHO", ,Location,setup
@@ -28,13 +31,10 @@ takefixedV,True, ,Parameters,*parameters
 takeIVsweep,True, ,Parameters,*parameters
 fixedV,1.0, V,Fixed_Voltage,parameters
 nRepeats,4, ,Number of Samples,parameters
-pauseTime,20.0, s,Time_between_fixed_voltage_measurements,parameters
+pauseTime,10.0, s,Time_between_fixed_voltage_measurements,parameters
 QCM1,True, ,Parameters,*parameters
 QCM2,True, ,Parameters,*parameters
 QCM3,False, ,Parameters,*parameters
 QCM4,False, ,Parameters,*parameters
 QCM_display,Thickness, ,Parameters,*parameters
 QCM_sampleTime,1.0,s,Parameters,*parameters
-OFET_width,20, ,Parameters,parameters
-OFET_no,1, ,Parameters,parameters
-OFET_thickness,30, ,Parameters,parameters
