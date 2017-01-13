@@ -69,7 +69,7 @@ class Conductivity_Engine():
             voltage.append(float(vv))
             sample.append(int(n))
             # conductivity calculation
-            oo = (ii/vv)*((float(width)*(1e-6))/(0.5e-3*(float(thickness)*1e-9))) # finger length * film thickness!!
+            oo = (ii/vv)*((float(width)*(1e-6))/(20e-3*(float(thickness)*1e-9))) # finger length * film thickness!!
             conductivity.append(float(oo))
             self.ConductivityConsole.emit('%s \t %.4g \t %.2e' % ((n+1), ii, oo*1e-2))
             self.progressBar.emit(20+(n+1)*(80/(int(self.user_parameters.value['nRepeats']))))
