@@ -103,19 +103,19 @@ class k2400():
 		if float(pars['initialV'])<float(pars['finalV']):
 			direction = 'UP'
 		else: 
-			direction = 'DOWN'
+			direction = 'DOWn'
+			pars['stepSize'] = str(float(pars['stepSize'])*-1)
 	
 		#Sweep Settings: sweep structure seems to trig, delay, trig delay
 		self.write("SOUR:VOLT:STARt %s"%pars['initialV']) # in V 
 		self.write("SOUR:VOLT:STOP %s"%pars['finalV']) # in V
 		self.write("SOUR:VOLT:STEP %s"%pars['stepSize']) # in V       
 		self.write("SOUR:DEL %s"%pars['holdTime']) # delay in s
-
-		self.write("TRIG:COUN %s"%self.query("SOUR:SWE:POIN?")) # set trigger to number of points in sweep
 		self.write("SOUR:VOLT:MODE SWE")    #select voltage sweep mode
 		self.write("SOUR:SWE:RANG AUTO")    #Auto source ranging
 		self.write("SOUR:SWE:SPAC LIN")    #linear sweep
-		self.write("SOUR:SWE:DIR %s"%direction) #up/down
+		self.write(":SOURce:SWEep:DIREction %s" % (direction) )#up/down
+		self.write("TRIG:COUN %s" % (self.query("SOUR:SWE:POIN?"))) # set trigger to number of points in sweep
 	
 		self.write("FORM:ELEM VOLT,CURR") #configure what READ will return, RES problematic
 	
@@ -144,7 +144,7 @@ class k2400():
 		
 		self.write(':SOUR:VOLT:LEV -%s'%pars['fixedV']) # -(measurement voltage)V for 20 seconds
 		self.write(':OUTP ON')
-		time_2_sleep = int(pars['pauseTime'])
+		time_2_sleep = float(pars['pauseTime'])
 		time.sleep(time_2_sleep)
 		self.write(':OUTP OFF')
 		

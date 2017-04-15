@@ -60,28 +60,33 @@ class Conductivity_Engine():
         current = []
         voltage =[]
         conductivity = []
-        for n in range((int(self.user_parameters.value['nRepeats']))):
-            if self._flag: 
-                self.signalStatus.emit('Stopped.')
-                self.ConductivityConsole.emit('Measurement aborted')            
-            vv, ii = smu.measConductivity(self.user_parameters.value) # the actual measurement - default 20 secs
-            current.append(float(ii))
-            voltage.append(float(vv))
-            sample.append(int(n))
-            # conductivity calculation
-            oo = (ii/vv)*((float(width)*(1e-6))/(20e-3*(float(thickness)*1e-9))) # finger length * film thickness!!
-            conductivity.append(float(oo))
-            self.ConductivityConsole.emit('%s \t %.4g \t %.2e' % ((n+1), ii, oo*1e-2))
-            self.progressBar.emit(20+(n+1)*(80/(int(self.user_parameters.value['nRepeats']))))
-            if self._flag: 
-                self.signalStatus.emit('Stopped.')
-                data2 = sample, voltage, current, conductivity    
-                self.endCondData.emit(data2)                
-                self.ConductivityConsole.emit('Measurement aborted')
-                return
-         
-        data2 = sample, voltage, current, conductivity    
-        self.endCondData.emit(data2)
+        try:
+            for n in range((int(self.user_parameters.value['nRepeats']))):
+                if self._flag: 
+                    self.signalStatus.emit('Stopped.')
+                    self.ConductivityConsole.emit('Measurement aborted')            
+                vv, ii = smu.measConductivity(self.user_parameters.value) # the actual measurement - default 20 secs
+                current.append(float(ii))
+                voltage.append(float(vv))
+                sample.append(int(n))
+                # conductivity calculation
+                oo = (ii/vv)*((float(width)*(1e-6))/(20e-3*(float(thickness)*1e-9))) # finger length * film thickness!!
+                conductivity.append(float(oo))
+                self.ConductivityConsole.emit('%s \t %.4g \t %.2e' % ((n+1), ii, oo*1e-2))
+                self.progressBar.emit(20+(n+1)*(80/(int(self.user_parameters.value['nRepeats']))))
+                if self._flag: 
+                    self.signalStatus.emit('Stopped.')
+                    data2 = sample, voltage, current, conductivity    
+                    self.endCondData.emit(data2)                
+                    self.ConductivityConsole.emit('Measurement aborted')
+                    return
+             
+            data2 = sample, voltage, current, conductivity    
+            self.endCondData.emit(data2)
+        
+        except(ValueError):
+            print('No fixed voltage conductivity measurement.')
+        
         return
         
 class IV_Engine():
