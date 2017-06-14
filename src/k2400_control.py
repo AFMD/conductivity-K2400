@@ -97,7 +97,8 @@ class k2400():
 	
 		self.write("SOUR:FUNC VOLT")    #voltage source function
 		self.write("SENS:FUNC 'CURR:DC'") #current sense function
-		self.write("SENS:CURR:PROT 1E%s"%pars['compliance'])    # current compliance in A
+		self.write("SENS:CURR:PROT 1E%s"%pars['compliance']) # current compliance in A
+		self.write("SENS:CURR:RANG 1E%s"%pars['compliance']) # current range to measure
 		self.write("SENS:NPLC %s"%pars['integrationTime']) # Sets integration time for measurement
 	
 		if float(pars['initialV'])<float(pars['finalV']):
@@ -120,8 +121,10 @@ class k2400():
 		self.write("FORM:ELEM VOLT,CURR") #configure what READ will return, RES problematic
 	
 		#measure
+		self.write(":SOUR:VOLT:LEV %s"%pars['initialV'])
 		self.write("OUTP ON")    #turns on SMU at SOUR:VOL:STARtrig
 		# READtriggers sweep (INIT) + (FETCH) data
+		time.sleep(5) #two second pause to allow instrument to settle
 		self.query('*OPC?') #check op complete
 		data = np.fromstring(self.query("READ?"), sep =',') #convert str to np.array
 		i_data = data[1::2]

@@ -1,22 +1,22 @@
  --- Insitu ECHO meas template for data-frame used to store inputs and write file header - change at your own risk---,,,,
 key,value,units,fmf_name,fmf_category
-exp_name,f8znpc-reference, ,Experiment,*reference
-sample,f8znpc-doped-5wtpc, ,Sample,*reference
-OFET_width,2.5, ,Channel_width,*reference
-OFET_no,2, ,OFET_number,*reference
-OFET_thickness,40.0, ,Film_thickness,*reference
+exp_name,meotpd-csa-100, ,Experiment,*reference
+sample,meotpd-csa-100, ,Sample,*reference
+OFET_width,20, ,Channel_width,*reference
+OFET_no,3, ,OFET_number,*reference
+OFET_thickness,200, ,Film_thickness,*reference
 user,ross, ,User,*reference
-date,2017-04-13 18:26:51.207132, ,Date,*reference
-setup,IVsweep, ,Experimental_setup,setup
+date,2017-06-09 19:54:43.076821, ,Date,*reference
+setup,Conductivity, ,Experimental_setup,setup
 vers,2, ,Software_version,setup
 loc,"AFMD lab, ECHO", ,Location,setup
 x_descript,V,/V,X_column,*data definitions
 y_descript,I,/A,Y_column,*data definitions
-sav_loc,/home/ross/Desktop/13-04-2017/, , , 
+sav_loc,/home/ross/physics/data/nobuya/meotpd-ref-hbr-csa/, , , 
 rec_len, , , , 
-initialV,-0.1, V,Initial_V,parameters
-finalV,0.1, V,Final_V,parameters
-stepSize,0.01, V,V_step,parameters
+initialV,-20.0, V,Initial_V,parameters
+finalV,20.0, V,Final_V,parameters
+stepSize,0.5, V,V_step,parameters
 holdTime,0.1, s,Hold_time,parameters
 baudR,57600,baudRate,setup,*setup
 termChar,\r,termChar,setup,*setup
@@ -27,11 +27,11 @@ integrationTime,1, ,Integration Time,setup
 route,Front, ,setup,*setup
 serAdapt,USB, ,setup,*setup
 serAd,0, ,setup,*setup
-takefixedV,False, ,Parameters,*parameters
+takefixedV,True, ,Parameters,*parameters
 takeIVsweep,True, ,Parameters,*parameters
-fixedV, , V,Fixed_Voltage,parameters
-nRepeats, , ,Number of Samples,parameters
-pauseTime, , s,Time_between_fixed_voltage_measurements,parameters
+fixedV,2.0, V,Fixed_Voltage,parameters
+nRepeats,4, ,Number of Samples,parameters
+pauseTime,5.0, s,Time_between_fixed_voltage_measurements,parameters
 QCM1,True, ,Parameters,*parameters
 QCM2,True, ,Parameters,*parameters
 QCM3,False, ,Parameters,*parameters
